@@ -1,0 +1,17 @@
+# Entorno virtual
+venv/
+.venv/
+env/
+.env
+
+# Script de estructura
+structure.sh
+
+# Python
+__pycache__/
+
+# Editores / sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
