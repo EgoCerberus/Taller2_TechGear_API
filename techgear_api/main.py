@@ -10,9 +10,17 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="TechGear API", lifespan=lifespan)
+app = FastAPI(
+    title="TechGear API",
+    description="API REST de catálogo de productos y pedidos de TechGear.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.include_router(productos.router)
+app.include_router(pedidos.router)
 
 
-@app.get("/")
+@app.get("/", tags=["Estado"])
 def root():
     return {"mensaje": "TechGear API funcionando"}

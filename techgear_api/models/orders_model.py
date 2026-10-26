@@ -1,14 +1,6 @@
 from datetime import datetime
-from enum import Enum
 from typing import List
 from pydantic import BaseModel, EmailStr, Field
-
-
-class EstadoPedido(str, Enum):
-    pendiente = "pendiente"
-    pagado = "pagado"
-    enviado = "enviado"
-    cancelado = "cancelado"
 
 
 class ItemPedidoCreate(BaseModel):
@@ -33,5 +25,4 @@ class PedidoResponse(BaseModel):
     cliente_email: EmailStr
     items: List[ItemPedido]
     total: float
-    estado: EstadoPedido
     fecha_creacion: datetime
