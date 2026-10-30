@@ -16,12 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from . import views  # Importa las vistas desde el mismo directorio
+from . import views  # Importa las vistas desde el mismo directorio1
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.catalogo_view, name='catalogo'),
     path('login/', views.login_view, name='login'),
-    path('registro/', views.register_view, name='registro'),
+    path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('dashboard/crear/', views.crear_producto_view, name='crear_producto'),
+    path('dashboard/eliminar/<str:producto_id>/', views.eliminar_producto_view, name='eliminar_producto'),
+    path('dashboard/editar/<str:producto_id>/', views.editar_producto_view, name='editar_producto'),
 ]
