@@ -54,7 +54,7 @@ ROOT_URLCONF = 'techgear_web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'techgear_web' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

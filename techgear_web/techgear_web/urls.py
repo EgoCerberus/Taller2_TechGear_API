@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from . import views  # Importa las vistas desde el mismo directorio
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.catalogo_view, name='catalogo'),
+    path('login/', views.login_view, name='login'),
+    path('registro/', views.register_view, name='registro'),
+    path('logout/', views.logout_view, name='logout'),
 ]

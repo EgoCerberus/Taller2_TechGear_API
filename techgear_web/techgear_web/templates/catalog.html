@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4">Catálogo de Productos</h2>
+<div class="row">
+    {% for producto in productos %}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ producto.categoria }}</h6>
+                    <p class="card-text"><strong>Precio:</strong> ${{ producto.precio }}</p>
+                    <p class="card-text"><strong>Stock:</strong> {{ producto.stock }} unidades</p>
+                    {% if usuario %}
+                        <button class="btn btn-success btn-sm w-100">Comprar</button>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-sm w-100">Inicia sesión para comprar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-muted">No hay productos disponibles en este momento o la API está desconectada.</p>
+    {% endfor %}
+</div>
+{% endblock %}
