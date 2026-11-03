@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from techgear_web import views # Importa las vistas desde el mismo directorio1
+import views # Importa las vistas desde el mismo directorio
 
 urlpatterns = [
     path('admin/', admin.site.urls),
