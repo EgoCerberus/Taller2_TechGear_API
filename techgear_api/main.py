@@ -27,7 +27,7 @@ from models.models import (
     UsuarioLogin,
     UsuarioOut,
 )
-from techgear_api.seguridad import (
+from seguridad import (
     crear_token,
     decodificar_token,
     es_email_admin,
