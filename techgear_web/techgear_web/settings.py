@@ -23,9 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-w$s($)61a@-g!-yw7ve&ec5z&5p&x(2=3w%=n0r^p#ajiro1o2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.vercel.app', # Deploy Django on vercel
+    '.onrender.com' # Deploy fastapi on vercel
+]
 
 
 # Application definition

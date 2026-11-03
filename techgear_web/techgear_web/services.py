@@ -1,6 +1,6 @@
 import requests
 
-API_URL = "http://127.0.0.1:8000"  # URL base de tu FastAPI (o tu URL de Render)
+API_URL = "http://127.0.0.1:8001" # URL base de tu FastAPI (o tu URL de Render)
 
 def api_listar_productos():
     try:
@@ -22,13 +22,27 @@ def api_login(email, password):
 
 def api_registrar_usuario(nombre, email, password):
     try:
-        response = requests.post(f"{API_URL}/usuarios/registro", json={
-            "nombre": nombre,
-            "email": email,
-            "password": password
-        })
-        return response.status_code == 201, response.json()
+        response = requests.post(
+            f"{API_URL}/usuarios/registro", 
+            json={
+                "nombre": nombre,
+                "email": email,
+                "password": password
+            },
+            timeout=5
+        )
+        
+        # Imprime en la consola de Django lo que realmente respondió FastAPI
+        print("STATUS CODE DE FASTAPI:", response.status_code)
+        print("TEXTO RESPUESTA DE FASTAPI:", response.text)
+        
+        # Si la respuesta está vacía o no es JSON, evitamos que explote
+        if not response.text.strip():
+            return response.status_code in [200, 201], {"detail": "Respuesta vacía de la API"}
+            
+        return response.status_code in [200, 201], response.json()
     except Exception as e:
+        print("ERROR EN SERVICES:", str(e))
         return False, {"detail": str(e)}
     
 def api_crear_producto(token, datos_producto):

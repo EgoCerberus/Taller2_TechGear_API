@@ -1,219 +1,222 @@
-from contextlib import asynccontextmanager
+"""API REST de TechGear (FastAPI + MongoDB Atlas)."""
 from datetime import datetime
-from typing import List, Optional
+from pathlib import Path
+from typing import List
+
 from bson import ObjectId
+from bson.errors import InvalidId
 from dotenv import load_dotenv
-import os
-from fastapi import FastAPI, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
-from pymongo import MongoClient
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pymongo.errors import DuplicateKeyError
 
-load_dotenv()
+# --- FUERZA LA CARGA DEL .ENV DESDE LA RUTA EXACTA ---
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
+# --------------------------------------------------------
 
-# ==================== CONFIGURACIÓN DE BASE DE DATOS ====================
-MONGODB_URI = os.getenv("MONGODB_URI")
-DB_NAME = os.getenv("DB_NAME", "techgear")
-
-if not MONGODB_URI:
-    raise RuntimeError("Falta la variable MONGODB_URI en el archivo .env")
-
-client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-db = client[DB_NAME]
-
-productos_collection = db["productos"]
-pedidos_collection = db["pedidos"]
-
-
-def verificar_conexion() -> bool:
-    """Hace ping a Atlas para confirmar que la conexión funciona."""
-    client.admin.command("ping")
-    return True
-
-
-# ==================== MODELOS PYDANTIC ====================
-
-# Productos
-class ProductoBase(BaseModel):
-    nombre: str = Field(..., min_length=2, max_length=100)
-    categoria: str = Field(..., min_length=2, max_length=50)
-    precio: float = Field(..., gt=0)
-    stock: int = Field(..., ge=0)
-
-
-class ProductoCreate(ProductoBase):
-    pass
-
-
-class ProductoUpdate(BaseModel):
-    nombre: Optional[str] = Field(None, min_length=2, max_length=100)
-    categoria: Optional[str] = Field(None, min_length=2, max_length=50)
-    precio: Optional[float] = Field(None, gt=0)
-    stock: Optional[int] = Field(None, ge=0)
-
-
-class ProductoResponse(ProductoBase):
-    id: str
-
-
-# Pedidos
-class ItemPedidoCreate(BaseModel):
-    producto_id: str
-    cantidad: int = Field(..., gt=0)
-
-
-class ItemPedido(ItemPedidoCreate):
-    nombre: str
-    precio_unitario: float = Field(..., gt=0)
-
-
-class PedidoCreate(BaseModel):
-    cliente_nombre: str = Field(..., min_length=2, max_length=100)
-    cliente_email: EmailStr
-    items: List[ItemPedidoCreate] = Field(..., min_length=1)
-
-
-class PedidoResponse(BaseModel):
-    id: str
-    cliente_nombre: str
-    cliente_email: EmailStr
-    items: List[ItemPedido]
-    total: float
-    fecha_creacion: datetime
-
-
-# ==================== LIFECYCLE DE FASTAPI ====================
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    verificar_conexion()
-    print("Conectado a MongoDB Atlas")
-    yield
-
-
-app = FastAPI(
-    title="TechGear API",
-    description="API REST de catálogo de productos y pedidos de TechGear (Estructura unificada en main.py).",
-    version="1.0.0",
-    lifespan=lifespan,
+from .db.database import pedidos_collection, productos_collection, usuarios_collection
+from .models.models import (
+    PedidoCreate,
+    PedidoOut,
+    ProductoCreate,
+    ProductoOut,
+    ProductoUpdate,
+    Token,
+    Usuario,
+    UsuarioLogin,
+    UsuarioOut,
+)
+from techgear_api.seguridad import (
+    crear_token,
+    decodificar_token,
+    es_email_admin,
+    hashear_password,
+    verificar_password,
 )
 
-
-# ==================== ENDPOINTS: ESTADO ====================
-@app.get("/", tags=["Estado"])
-def root():
-    return {"mensaje": "TechGear API funcionando"}
+app = FastAPI(title="TechGear API", version="1.2.0")
+bearer = HTTPBearer(auto_error=False)
 
 
-# ==================== ENDPOINTS: PRODUCTOS (CRUD) ====================
-@app.post("/productos", response_model=ProductoResponse, status_code=status.HTTP_201_CREATED, tags=["Productos"])
-def crear_producto(producto: ProductoCreate):
-    producto_dict = producto.dict()
-    resultado = productos_collection.insert_one(producto_dict)
-    producto_criado = productos_collection.find_one({"_id": resultado.inserted_id})
-    producto_criado["id"] = str(producto_criado["_id"])
-    return producto_criado
+@app.on_event("startup")
+def crear_indices():
+    # Garantiza que el email sea único en la colección de usuarios
+    try:
+        usuarios_collection.create_index("email", unique=True)
+    except Exception:
+        pass
 
 
-@app.get("/productos", response_model=List[ProductoResponse], tags=["Productos"])
-def listar_productos():
-    productos = []
-    for p in productos_collection.find():
-        p["id"] = str(p["_id"])
-        productos.append(p)
-    return productos
+def to_oid(id_: str) -> ObjectId:
+    try:
+        return ObjectId(id_)
+    except (InvalidId, TypeError):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "ID inválido")
 
 
-@app.get("/productos/{id}", response_model=ProductoResponse, tags=["Productos"])
-def obtener_producto(id: str):
-    if not ObjectId.is_valid(id):
-        raise HTTPException(status_code=400, detail="ID inválido")
-    p = productos_collection.find_one({"_id": ObjectId(id)})
-    if not p:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    p["id"] = str(p["_id"])
-    return p
+def serializar(doc: dict) -> dict:
+    doc["id"] = str(doc.pop("_id"))
+    return doc
 
 
-@app.put("/productos/{id}", response_model=ProductoResponse, tags=["Productos"])
-def actualizar_producto(id: str, producto_update: ProductoUpdate):
-    if not ObjectId.is_valid(id):
-        raise HTTPException(status_code=400, detail="ID inválido")
-    datos = {k: v for k, v in producto_update.dict().items() if v is not None}
-    if not datos:
-        raise HTTPException(status_code=400, detail="No hay datos para actualizar")
-    
-    resultado = productos_collection.find_one_and_update(
-        {"_id": ObjectId(id)},
-        {"$set": datos},
-        return_document=True
-    )
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    resultado["id"] = str(resultado["_id"])
-    return resultado
-
-
-@app.delete("/productos/{id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Productos"])
-def eliminar_producto(id: str):
-    if not ObjectId.is_valid(id):
-        raise HTTPException(status_code=400, detail="ID inválido")
-    resultado = productos_collection.delete_one({"_id": ObjectId(id)})
-    if resultado.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return None
-
-
-# ==================== ENDPOINTS: PEDIDOS ====================
-@app.post("/pedidos", response_model=PedidoResponse, status_code=status.HTTP_201_CREATED, tags=["Pedidos"])
-def crear_pedido(pedido: PedidoCreate):
-    items_calculados = []
-    total = 0.0
-
-    for item in pedido.items:
-        if not ObjectId.is_valid(item.producto_id):
-            raise HTTPException(status_code=400, detail=f"ID de producto inválido: {item.producto_id}")
-        
-        prod = productos_collection.find_one({"_id": ObjectId(item.producto_id)})
-        if not prod:
-            raise HTTPException(status_code=404, detail=f"Producto no encontrado: {item.producto_id}")
-        
-        if prod["stock"] < item.cantidad:
-            raise HTTPException(status_code=400, detail=f"Stock insuficiente para el producto: {prod['nombre']}")
-        
-        precio = prod["precio"]
-        subtotal = precio * item.cantidad
-        total += subtotal
-
-        # Descontar stock del producto en la base de datos
-        productos_collection.update_one(
-            {"_id": prod["_id"]},
-            {"$inc": {"stock": -item.cantidad}}
-        )
-
-        items_calculados.append({
-            "producto_id": item.producto_id,
-            "cantidad": item.cantidad,
-            "nombre": prod["nombre"],
-            "precio_unitario": precio
-        })
-
-    nuevo_pedido = {
-        "cliente_nombre": pedido.cliente_nombre,
-        "cliente_email": pedido.cliente_email,
-        "items": items_calculados,
-        "total": total,
-        "fecha_creacion": datetime.utcnow()
+def usuario_publico(doc: dict) -> dict:
+    return {
+        "id": str(doc["_id"]),
+        "nombre": doc["nombre"],
+        "email": doc["email"],
+        "rol": doc.get("rol", "cliente"),
     }
 
-    resultado = pedidos_collection.insert_one(nuevo_pedido)
-    pedido_creado = pedidos_collection.find_one({"_id": resultado.inserted_id})
-    pedido_creado["id"] = str(pedido_creado["_id"])
-    return pedido_creado
+
+def usuario_actual(
+    cred: HTTPAuthorizationCredentials = Depends(bearer),
+) -> dict:
+    """Dependencia: exige 'Authorization: Bearer <jwt>' y devuelve el usuario."""
+    if cred is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Falta el token")
+    user_id = decodificar_token(cred.credentials)
+    usuario = usuarios_collection.find_one({"_id": to_oid(user_id)})
+    if not usuario:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Usuario no existe")
+    return usuario
 
 
-@app.get("/pedidos", response_model=List[PedidoResponse], tags=["Pedidos"])
+def solo_admin(usuario: dict = Depends(usuario_actual)) -> dict:
+    """Dependencia: deja pasar únicamente a usuarios con rol 'administrador' o 'admin'."""
+    rol = usuario.get("rol", "")
+    if rol not in ["admin", "administrador"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Se requiere rol de administrador")
+    return usuario
+
+
+# ---------- Productos (CRUD Protegido para Admins) ----------
+@app.post(
+    "/productos",
+    response_model=ProductoOut,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Productos"],
+)
+def crear_producto(producto: ProductoCreate, _: dict = Depends(solo_admin)):
+    res = productos_collection.insert_one(producto.model_dump())
+    return serializar(productos_collection.find_one({"_id": res.inserted_id}))
+
+
+@app.get("/productos", response_model=List[ProductoOut], tags=["Productos"])
+def listar_productos():
+    return [serializar(p) for p in productos_collection.find()]
+
+
+@app.get("/productos/{producto_id}", response_model=ProductoOut, tags=["Productos"])
+def obtener_producto(producto_id: str):
+    producto = productos_collection.find_one({"_id": to_oid(producto_id)})
+    if not producto:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Producto no encontrado")
+    return serializar(producto)
+
+
+@app.put("/productos/{producto_id}", response_model=ProductoOut, tags=["Productos"])
+def actualizar_producto(
+    producto_id: str, producto: ProductoUpdate, _: dict = Depends(solo_admin)
+):
+    cambios = producto.model_dump(exclude_unset=True)
+    if not cambios:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No hay campos para actualizar")
+    res = productos_collection.update_one(
+        {"_id": to_oid(producto_id)}, {"$set": cambios}
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Producto no encontrado")
+    return serializar(productos_collection.find_one({"_id": to_oid(producto_id)}))
+
+
+@app.delete("/productos/{producto_id}", tags=["Productos"])
+def eliminar_producto(producto_id: str, _: dict = Depends(solo_admin)):
+    res = productos_collection.delete_one({"_id": to_oid(producto_id)})
+    if res.deleted_count == 0:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Producto no encontrado")
+    return {"mensaje": "Producto eliminado"}
+
+
+# ---------- Pedidos ----------
+@app.post(
+    "/pedidos",
+    response_model=PedidoOut,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Pedidos"],
+)
+def registrar_pedido(pedido: PedidoCreate):
+    total = 0.0
+    actualizaciones = []
+    for item in pedido.items:
+        producto = productos_collection.find_one({"_id": to_oid(item.producto_id)})
+        if not producto:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, f"Producto {item.producto_id} no existe"
+            )
+        if producto["stock"] < item.cantidad:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Stock insuficiente para '{producto['nombre']}'",
+            )
+        total += producto["precio"] * item.cantidad
+        actualizaciones.append((producto["_id"], item.cantidad))
+
+    for oid, cantidad in actualizaciones:
+        productos_collection.update_one({"_id": oid}, {"$inc": {"stock": -cantidad}})
+
+    data = pedido.model_dump()
+    data["total"] = round(total, 2)
+    data["estado"] = "pendiente"
+    data["fecha"] = datetime.utcnow()
+    res = pedidos_collection.insert_one(data)
+    return serializar(pedidos_collection.find_one({"_id": res.inserted_id}))
+
+
+@app.get("/pedidos", response_model=List[PedidoOut], tags=["Pedidos"])
 def listar_pedidos():
-    pedidos = []
-    for p in pedidos_collection.find():
-        p["id"] = str(p["_id"])
-        pedidos.append(p)
-    return pedidos
+    return [serializar(p) for p in pedidos_collection.find()]
+
+
+# ---------- Usuarios (registro, login con JWT, perfil) ----------
+@app.post(
+    "/usuarios/registro",
+    response_model=UsuarioOut,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Usuarios"],
+)
+def registrar_usuario(usuario: Usuario):
+    rol = "admin" if es_email_admin(usuario.email) else "cliente"
+    doc = {
+        "nombre": usuario.nombre,
+        "email": usuario.email.lower(),
+        "password": hashear_password(usuario.password),
+        "rol": rol,
+    }
+    try:
+        res = usuarios_collection.insert_one(doc)
+    except DuplicateKeyError:
+        raise HTTPException(status.HTTP_409_CONFLICT, "El email ya está registrado")
+    return usuario_publico(usuarios_collection.find_one({"_id": res.inserted_id}))
+
+
+@app.post("/usuarios/login", response_model=Token, tags=["Usuarios"])
+def login(datos: UsuarioLogin):
+    usuario = usuarios_collection.find_one({"email": datos.email.lower()})
+    if not usuario or not verificar_password(datos.password, usuario["password"]):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Email o contraseña incorrectos")
+    
+    if es_email_admin(usuario["email"]) and usuario.get("rol") != "admin":
+        usuarios_collection.update_one({"_id": usuario["_id"]}, {"$set": {"rol": "admin"}})
+        usuario["rol"] = "admin"
+        
+    return {
+        "access_token": crear_token(str(usuario["_id"])),
+        "token_type": "bearer",
+        "usuario": usuario_publico(usuario),
+    }
+
+
+@app.get("/usuarios/me", response_model=UsuarioOut, tags=["Usuarios"])
+def mi_perfil(usuario: dict = Depends(usuario_actual)):
+    return usuario_publico(usuario)
