@@ -38,6 +38,9 @@ from seguridad import (
 app = FastAPI(title="TechGear API", version="1.2.0")
 bearer = HTTPBearer(auto_error=False)
 
+@app.get("/", tags=["General"])
+def inicio():
+    return {"mensaje": "TechGear API funcionando", "docs": "/docs"}
 
 @app.on_event("startup")
 def crear_indices():
@@ -148,6 +151,7 @@ def eliminar_producto(producto_id: str, _: dict = Depends(solo_admin)):
 def registrar_pedido(pedido: PedidoCreate):
     total = 0.0
     actualizaciones = []
+    items_guardar = []
     for item in pedido.items:
         producto = productos_collection.find_one({"_id": to_oid(item.producto_id)})
         if not producto:
@@ -161,11 +165,18 @@ def registrar_pedido(pedido: PedidoCreate):
             )
         total += producto["precio"] * item.cantidad
         actualizaciones.append((producto["_id"], item.cantidad))
+        items_guardar.append({
+            "producto_id": item.producto_id,
+            "cantidad": item.cantidad,
+            "nombre": producto["nombre"],
+            "precio_unitario": producto["precio"],
+        })
 
     for oid, cantidad in actualizaciones:
         productos_collection.update_one({"_id": oid}, {"$inc": {"stock": -cantidad}})
 
     data = pedido.model_dump()
+    data["items"] = items_guardar
     data["total"] = round(total, 2)
     data["estado"] = "pendiente"
     data["fecha"] = datetime.utcnow()

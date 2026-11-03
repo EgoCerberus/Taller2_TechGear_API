@@ -130,3 +130,7 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Para que funcione en Vercel
+CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app']
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
