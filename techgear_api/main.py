@@ -15,8 +15,8 @@ env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 # --------------------------------------------------------
 
-from .db.database import pedidos_collection, productos_collection, usuarios_collection
-from .models.models import (
+from db.database import pedidos_collection, productos_collection, usuarios_collection
+from models.models import (
     PedidoCreate,
     PedidoOut,
     ProductoCreate,
