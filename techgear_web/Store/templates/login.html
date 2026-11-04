@@ -1,21 +1,55 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}TechGear - Iniciar sesión{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-icon { width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
+    .auth-card .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 .2rem rgba(59, 130, 246, .2); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow p-4">
-            <h3 class="text-center mb-3">Iniciar Sesión</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label">Correo electrónico</label>
-                    <input type="email" name="email" class="form-control" required>
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-5">
+        <div class="card border-0 shadow-sm auth-card">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="auth-icon mb-3"><i class="bi bi-person"></i></div>
+                    <h2 class="fw-bold mb-1">Iniciar sesión</h2>
+                    <p class="text-muted mb-0">Bienvenido de nuevo a TechGear</p>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Entrar</button>
-            </form>
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="tu@correo.com" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Tu contraseña" required>
+                        </div>
+                    </div>
+
+                    <div class="text-end mb-4">
+                        <a href="{% url 'recuperar' %}" class="small text-decoration-none">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-brand w-100 btn-lg">Entrar</button>
+                </form>
+
+                <hr class="my-4">
+                <p class="text-center small mb-0">
+                    ¿No tienes cuenta? <a href="{% url 'register' %}" class="fw-semibold text-decoration-none">Regístrate</a>
+                </p>
+            </div>
         </div>
     </div>
 </div>

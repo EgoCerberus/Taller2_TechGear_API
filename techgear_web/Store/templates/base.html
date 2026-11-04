@@ -2,37 +2,132 @@
 <html lang="es-CO">
 <head>
     <meta charset="UTF-8">
-    <title>TechGear - Tienda</title>
+    <title>{% block title %}TechGear - Tienda{% endblock %}</title>
     <meta name="description" content="Catálogo de productos y tienda de tecnología TechGear">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root { --brand: #3b82f6; --brand-2: #8b5cf6; --dark: #0b1020; }
+        body { background: #f6f8fc; }
+        .navbar-tech { background: var(--dark); }
+        .brand { font-weight: 800; letter-spacing: .5px; }
+        .brand span { color: var(--brand); }
+        .btn-brand { background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: #fff; border: 0; }
+        .btn-brand:hover { color: #fff; filter: brightness(1.1); }
+        footer.footer-tech { background: var(--dark); color: #cbd5e1; }
+        footer.footer-tech a { color: #cbd5e1; text-decoration: none; }
+        footer.footer-tech a:hover { color: #fff; }
+        html { scroll-behavior: smooth; }
+    </style>
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Barra superior -->
+    <div class="bg-dark text-white-50 small py-1 text-center">
+        Envíos gratis en compras superiores a $200.000 COP
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-tech sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'catalogo' %}">TechGear</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
+            <a class="navbar-brand brand" href="{% url 'home' %}">
+                <i class="bi bi-cpu-fill text-primary"></i> Tech<span>Gear</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#categorias">Categorías</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#productos">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#ofertas">Ofertas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#contacto">Contacto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'catalogo' %}">Catálogo</a></li>
+                </ul>
+
+                <!-- Buscador: envía ?q=... al catálogo -->
+                <form class="d-flex me-lg-3 my-2 my-lg-0" role="search" method="get" action="{% url 'catalogo' %}">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Buscar productos...">
+                    <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+
+                <ul class="navbar-nav align-items-lg-center">
                     {% if usuario %}
-                        <li class="nav-item"><span class="navbar-text text-white me-3">Hola, {{ usuario.nombre }}</span></li>
+                        <li class="nav-item"><span class="navbar-text text-white me-3"><i class="bi bi-person-circle"></i> Hola, {{ usuario.nombre }}</span></li>
                         <li class="nav-item"><a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">Cerrar Sesión</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a></li>
-                        <li class="nav-item"><a class="btn btn-primary btn-sm ms-2" href="{% url 'register' %}">Registrarse</a></li>
+                        <li class="nav-item"><a class="btn btn-brand btn-sm ms-lg-2" href="{% url 'register' %}">Registrarse</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container">
-        {% if messages %}
+    {% if messages %}
+        <div class="container mt-3">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                <div class="alert alert-{{ message.tags }} mb-0 mt-2">{{ message }}</div>
             {% endfor %}
-        {% endif %}
-        
-        {% block content %}{% endblock %}
-    </div>
+        </div>
+    {% endif %}
+
+    <main class="flex-grow-1">
+        {# Secciones de ancho completo (la página de inicio usa este bloque) #}
+        {% block fullwidth %}{% endblock %}
+
+        {# Contenido normal dentro de un contenedor (catálogo, login, etc.) #}
+        <div class="container mt-4">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-tech pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="brand fs-4 text-white"><i class="bi bi-cpu-fill text-primary"></i> Tech<span>Gear</span></div>
+                    <p class="mt-2 small">Tu tienda de tecnología de confianza.</p>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h6 class="text-white">Tienda</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="{% url 'home' %}#categorias">Categorías</a></li>
+                        <li><a href="{% url 'home' %}#productos">Productos</a></li>
+                        <li><a href="{% url 'home' %}#ofertas">Ofertas</a></li>
+                        <li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h6 class="text-white">Ayuda</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#">Envíos</a></li>
+                        <li><a href="#">Garantías</a></li>
+                        <li><a href="{% url 'home' %}#contacto">Contacto</a></li>
+                        {% if usuario %}
+                            <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">Iniciar sesión</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-white">Síguenos</h6>
+                    <a class="fs-4 me-3" href="#"><i class="bi bi-instagram"></i></a>
+                    <a class="fs-4 me-3" href="#"><i class="bi bi-facebook"></i></a>
+                    <a class="fs-4 me-3" href="#"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center small">&copy; 2026 TechGear. Todos los derechos reservados.</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -2,6 +2,7 @@ import requests
 
 # URL base de tu FastAPI (o tu URL de Render)
 # API_URL = "http://127.0.0.1:8001" 
+# API_URL = "https://taller2-techgear-api.onrender.com"
 API_URL = "https://taller2-techgear-api.onrender.com"
 
 def api_listar_productos():
@@ -45,6 +46,14 @@ def api_registrar_usuario(nombre, email, password):
         return response.status_code in [200, 201], response.json()
     except Exception as e:
         print("ERROR EN SERVICES:", str(e))
+        return False, {"detail": str(e)}
+
+def api_recuperar_password(email):
+    """Envía la solicitud de recuperación de contraseña a la API"""
+    try:
+        response = requests.post(f"{API_URL}/usuarios/recuperar", json={"email": email}, timeout=5)
+        return response.status_code in [200, 201], response.json() if response.text.strip() else {}
+    except Exception as e:
         return False, {"detail": str(e)}
     
 def api_crear_producto(token, datos_producto):

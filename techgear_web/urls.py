@@ -20,9 +20,11 @@ import views # Importa las vistas desde el mismo directorio
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.catalogo_view, name='catalogo'),
+    path('', views.home, name='home'),
+    path('catalogo/', views.catalogo_view, name='catalogo'),
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
+    path('recuperar/', views.recuperar_view, name='recuperar'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('dashboard/crear/', views.crear_producto_view, name='crear_producto'),

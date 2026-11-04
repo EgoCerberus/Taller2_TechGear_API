@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}TechGear - Recuperar cuenta{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-icon { width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="auth-icon mb-3"><i class="bi bi-key"></i></div>
+                    <h2 class="fw-bold mb-1">¿Olvidaste tu contraseña?</h2>
+                    <p class="text-muted mb-0">Escribe el correo con el que te registraste y te enviaremos las instrucciones para recuperar tu cuenta.</p>
+                </div>
+
+                <form method="post" action="{% url 'recuperar' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="tu@correo.com" required autofocus>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-brand w-100 btn-lg">Enviar instrucciones</button>
+                </form>
+
+                <hr class="my-4">
+                <div class="d-flex justify-content-between small">
+                    <a href="{% url 'login' %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Volver a iniciar sesión</a>
+                    <a href="{% url 'register' %}" class="text-decoration-none">Crear cuenta</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
