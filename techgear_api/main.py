@@ -2,6 +2,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import List
+from pydantic import BaseModel
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -231,3 +232,17 @@ def login(datos: UsuarioLogin):
 @app.get("/usuarios/me", response_model=UsuarioOut, tags=["Usuarios"])
 def mi_perfil(usuario: dict = Depends(usuario_actual)):
     return usuario_publico(usuario)
+
+class RecuperarPasswordRequest(BaseModel):
+    email: str
+
+@app.post("/usuarios/recuperar", tags=["Usuarios"])
+def recuperar_password(datos: RecuperarPasswordRequest):
+    """Procesa la solicitud de recuperación de contraseña."""
+    usuario = usuarios_collection.find_one({"email": datos.email.lower()})
+    
+    # Por seguridad (para evitar filtración de correos registrados), 
+    # devolvemos el mismo mensaje de éxito exista o no el usuario en la BD.
+    return {
+        "mensaje": "Si el correo está registrado, recibirás las instrucciones para recuperar tu cuenta."
+    }
