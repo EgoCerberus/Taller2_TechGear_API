@@ -10,11 +10,10 @@ from services import (
     api_eliminar_producto,
     api_actualizar_producto
 )
-
 try:
     from services import api_recuperar_password
 except ImportError:
-    api_recuperar_password = None  # todavía no existe en services.py
+    api_recuperar_password = None
 
 
 # ---------------------------------------------------------------------------
