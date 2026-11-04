@@ -17,10 +17,12 @@ def api_listar_productos():
 def api_login(email, password):
     try:
         response = requests.post(f"{API_URL}/usuarios/login", json={"email": email, "password": password})
+        print("STATUS:", response.status_code)
+        print("RESPONSE:", response.text)
         if response.status_code == 200:
             return response.json()
-    except Exception:
-        pass
+    except Exception as e:
+        print("ERROR:", e)
     return None
 
 def api_registrar_usuario(nombre, email, password):
