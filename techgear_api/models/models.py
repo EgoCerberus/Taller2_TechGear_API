@@ -68,8 +68,9 @@ class UsuarioLogin(BaseModel):
 class UsuarioOut(BaseModel):
     id: str
     nombre: str
-    email: EmailStr
-    rol: str
+    email: str
+    rol: str = "cliente"
+    es_admin: bool = False 
 
 
 class Token(BaseModel):

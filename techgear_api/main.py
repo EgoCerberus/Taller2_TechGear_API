@@ -70,6 +70,7 @@ def usuario_publico(doc: dict) -> dict:
         "nombre": doc["nombre"],
         "email": doc["email"],
         "rol": doc.get("rol", "cliente"),
+        "es_admin": doc.get("es_admin", False),  
     }
 
 
