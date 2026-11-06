@@ -1,89 +1,161 @@
-{% extends 'base.html' %}
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container my-4">
-    
-    <!-- Encabezado Estilizado (Idéntico a tu referencia de cliente) -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="bg-primary-subtle text-primary rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; min-width: 50px;">
-                <i class="bi bi-bag-check fs-4"></i>
-            </div>
-            <div>
-                <h2 class="fw-bold text-dark mb-0">Mis pedidos</h2>
-                <p class="text-muted mb-0">Sigue el estado de tus compras.</p>
-            </div>
+  <!-- ================================================================= -->
+  <!-- SECCIÓN 1: ENCABEZADO DE LA VISTA DE MIS PEDIDOS                  -->
+  <!-- Muestra el título principal, la descripción y el botón de retorno -->
+  <!-- al catálogo de productos.                                         -->
+  <!-- ================================================================= -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div
+        class="bg-primary-subtle text-primary rounded-3 p-3 d-flex align-items-center justify-content-center"
+        style="width: 50px; height: 50px; min-width: 50px"
+      >
+        <i class="bi bi-bag-check fs-4"></i>
+      </div>
+      <div>
+        <h2 class="fw-bold text-dark mb-0">Mis pedidos</h2>
+        <p class="text-muted mb-0">
+          Sigue el estado de tus compras y gestiona tu carrito.
+        </p>
+      </div>
+    </div>
+    <div>
+      <a
+        href="{% url 'catalogo' %}"
+        class="btn btn-outline-primary rounded-pill px-3 py-2"
+      >
+        <i class="bi bi-arrow-left me-1"></i> Volver al catálogo
+      </a>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- SECCIÓN 2: LISTADO DINÁMICO DE COMPRAS DEL CLIENTE                -->
+  <!-- Itera sobre cada pedido registrado y construye su tarjeta visual. -->
+  <!-- ================================================================= -->
+  <div class="d-flex flex-column gap-3">
+    {% for pedido in pedidos %}
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+      <!-- Subsección 2.1: Cabecera del pedido (Número, Fecha y Estado) -->
+      <div
+        class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3"
+      >
+        <div>
+          <!-- Muestra el número de pedido asignado de forma limpia -->
+          <span class="fw-bold text-dark fs-5"
+            >Pedido #{{ pedido.codigo_limpio }}</span
+          >
+          <span class="text-muted small ms-2">
+            <i class="bi bi-calendar3 me-1"></i>{{ pedido.fecha_formateada }}
+          </span>
+          <!-- Muestra el nombre y correo del comprador -->
+          <div class="text-muted small mt-1">
+            <i class="bi bi-person me-1"></i> Comprador:
+            <strong>{{ pedido.cliente_nombre|default:usuario.nombre }}</strong>
+            ({{ pedido.cliente_email|default:usuario.email }})
+          </div>
         </div>
         <div>
-            <a href="{% url 'catalogo' %}" class="btn btn-outline-primary rounded-pill px-3 py-2">
-                <i class="bi bi-arrow-left me-1"></i> Volver al catálogo
-            </a>
+          <!-- Inserta insignias de estado con colores distintivos -->
+          {% if pedido.estado|lower == 'enviado' %}
+          <span
+            class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fw-semibold"
+          >
+            <i class="bi bi-truck me-1"></i> Enviado
+          </span>
+          {% elif pedido.estado|lower == 'pendiente' %}
+          <span
+            class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2 fw-semibold"
+          >
+            <i class="bi bi-clock me-1"></i> Pendiente
+          </span>
+          {% elif pedido.estado|lower == 'entregado' %}
+          <span
+            class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold"
+          >
+            <i class="bi bi-check-circle me-1"></i> Entregado
+          </span>
+          {% else %}
+          <span
+            class="badge bg-secondary-subtle text-dark rounded-pill px-3 py-2 fw-semibold"
+          >
+            {{ pedido.estado|default:"Pendiente" }}
+          </span>
+          {% endif %}
         </div>
-    </div>
+      </div>
 
-    <!-- Lista de Pedidos del Cliente -->
-    <div class="d-flex flex-column gap-3">
-        {% for pedido in pedidos %}
-        <div class="card shadow-sm border-0 rounded-4 p-4">
-            
-            <!-- Cabecera de la tarjeta: Código, Fecha y Estado -->
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
-                <div>
-                    <span class="fw-bold text-dark">Pedido #{{ pedido.codigo }}</span>
-                    <span class="text-muted small ms-2"><i class="bi bi-calendar3 me-1"></i>{{ pedido.fecha }}</span>
-                </div>
-                <div>
-                    {% if pedido.estado == 'Enviado' %}
-                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fw-semibold">
-                            <i class="bi bi-truck me-1"></i> Enviado
-                        </span>
-                    {% elif pedido.estado == 'Pendiente' %}
-                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2 fw-semibold">
-                            <i class="bi bi-clock me-1"></i> Pendiente
-                        </span>
-                    {% elif pedido.estado == 'Entregado' %}
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
-                            <i class="bi bi-check-circle me-1"></i> Entregado
-                        </span>
-                    {% else %}
-                        <span class="badge bg-secondary-subtle text-dark rounded-pill px-3 py-2 fw-semibold">
-                            {{ pedido.estado }}
-                        </span>
-                    {% endif %}
-                </div>
+      <!-- Subsección 2.2: Detalle de productos y ubicación de entrega -->
+      <div class="mb-3">
+        <!-- Recorre los items limpios contenidos en el pedido -->
+        {% for item in pedido.items_limpios %}
+        <div
+          class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-2"
+        >
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-box-seam text-primary fs-4"></i>
+            <div>
+              <!-- Muestra el nombre real del producto y su precio unitario -->
+              <h6 class="fw-semibold text-dark mb-0">
+                {{ item.nombre_mostrar }}
+              </h6>
+              <small class="text-muted"
+                >Precio unitario: ${{ item.precio_unitario|floatformat:"0g" }}
+                c/u</small
+              >
             </div>
+          </div>
 
-            <!-- Detalle del producto y dirección -->
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-box-seam text-primary"></i>
-                        <span class="fw-semibold text-dark">{{ pedido.producto_nombre }} x {{ pedido.cantidad }}</span>
-                    </div>
-                    <span class="text-muted small">${{ pedido.precio_unitario }} c/u</span>
-                </div>
-
-                <div class="border rounded-3 p-2 px-3 text-muted small d-flex align-items-center gap-2 bg-white">
-                    <i class="bi bi-geo-alt text-primary fs-5"></i>
-                    <span>{{ pedido.direccion }}, Tel. {{ pedido.telefono }}</span>
-                </div>
-            </div>
-
-            <!-- Total del pedido (Sin selector de administrador) -->
-            <div class="d-flex justify-content-between align-items-center pt-2">
-                <span class="text-muted fw-semibold">Total</span>
-                <span class="fs-5 fw-bold text-dark">${{ pedido.total }}</span>
-            </div>
-
-        </div>
-        {% empty %}
-        <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-            <i class="bi bi-bag-x fs-1 text-muted d-block mb-2"></i>
-            <h5 class="text-muted fw-bold">Aún no tienes compras registradas</h5>
-            <p class="text-muted small">Explora nuestro catálogo y realiza tu primer pedido.</p>
-            <a href="{% url 'catalogo' %}" class="btn btn-primary rounded-pill px-4 mt-2">Ir al catálogo</a>
+          <!-- Cantidad del producto actual en el pedido -->
+          <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6"
+              >Cant: {{ item.cantidad }}</span
+            >
+          </div>
         </div>
         {% endfor %}
-    </div>
 
+        <!-- Dirección y Teléfono de contacto del cliente (con texto amigable si no están registrados) -->
+        <div
+          class="border rounded-3 p-2 px-3 text-muted small d-flex align-items-center gap-2 bg-white"
+        >
+          <i class="bi bi-geo-alt text-primary fs-5"></i>
+          <span
+            >{{ pedido.direccion_limpia }} | Tel: {{ pedido.telefono_limpio
+            }}</span
+          >
+        </div>
+      </div>
+
+      <!-- Subsección 2.3: Total monetario de la transacción -->
+      <div
+        class="d-flex justify-content-between align-items-center pt-2 border-top"
+      >
+        <span class="text-muted fw-semibold">Total del Pedido</span>
+        <span class="fs-5 fw-bold text-success"
+          >${{ pedido.total|default:0|floatformat:"0g" }}</span
+        >
+      </div>
+    </div>
+    {% empty %}
+    <!-- ================================================================= -->
+    <!-- SECCIÓN 3: ESTADO VACÍO (SIN COMPRAS)                            -->
+    <!-- Se muestra únicamente si el usuario no registra ningún pedido.   -->
+    <!-- ================================================================= -->
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+      <i class="bi bi-bag-x fs-1 text-muted d-block mb-2"></i>
+      <h5 class="text-muted fw-bold">Aún no tienes compras registradas</h5>
+      <p class="text-muted small">
+        Explora nuestro catálogo y añade productos a tu pedido.
+      </p>
+      <a
+        href="{% url 'catalogo' %}"
+        class="btn btn-primary rounded-pill px-4 mt-2"
+        >Ir al catálogo</a
+      >
+    </div>
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}

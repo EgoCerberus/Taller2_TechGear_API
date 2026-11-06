@@ -11,7 +11,9 @@ from services import (
     api_actualizar_producto,
     api_listar_pedidos,           
     api_actualizar_estado_pedido,
-    api_crear_pedido  
+    api_crear_pedido,
+    api_actualizar_pedido_cliente,
+    api_eliminar_pedido
 )
 try:
     from services import api_recuperar_password
@@ -286,23 +288,72 @@ def actualizar_estado_pedido_view(request, pedido_id):
     return redirect('lista_pedidos')
 
 def mis_pedidos_view(request):
+    """
+    Vista encargada de listar los pedidos del usuario actual.
+    Limpia, normaliza y formatea todos los datos para evitar errores en la plantilla.
+    """
     token = request.session.get('access_token')
     usuario = request.session.get('usuario')
 
     if not token or not usuario:
         return redirect('login')
 
-    # Reutilizamos o llamamos al servicio que filtra los pedidos del cliente logueado
-    pedidos = api_listar_pedidos(token) or []
+    pedidos_api = api_listar_pedidos(token) or []
+    pedidos = []
     
-    # Si el usuario no es admin, filtramos solo sus pedidos (opcional según cómo devuelva la API)
+    for p in pedidos_api:
+        if isinstance(p, dict):
+            ped = dict(p)
+            
+            # Normalizar ID del pedido
+            if '_id' in ped and isinstance(ped['_id'], dict):
+                ped['id'] = ped['_id'].get('$oid') or str(ped['_id'])
+            elif '_id' in ped:
+                ped['id'] = str(ped['_id'])
+                
+            # Código de pedido limpio
+            codigo_raw = ped.get('numero_pedido') or ped.get('id') or 'TG-0000'
+            ped['codigo_limpio'] = str(codigo_raw)[:8].upper()
+                
+            # Formatear fecha de forma segura
+            raw_fecha = ped.get('fecha') or ped.get('created_at') or ''
+            if raw_fecha:
+                ped['fecha_formateada'] = str(raw_fecha).replace('T', ' - ')[:19].replace('-', '/')
+            else:
+                ped['fecha_formateada'] = 'Fecha no disponible'
+
+            # Normalizar dirección y teléfono (si no hay, mostrar texto amigable)
+            ped['direccion_limpia'] = ped.get('direccion') if ped.get('direccion') and ped.get('direccion') != 'Dirección no registrada' else 'Dirección no disponible'
+            ped['telefono_limpio'] = ped.get('telefono') if ped.get('telefono') and ped.get('telefono') != 'S/N' else 'No registrado'
+
+            # Normalizar ítems del pedido para asegurar que tengan nombre y precio limpios
+            items_limpios = []
+            for item in ped.get('items', []):
+                i_limpio = dict(item)
+                i_limpio['nombre_mostrar'] = i_limpio.get('nombre') or i_limpio.get('producto_nombre') or 'Producto TechGear'
+                i_limpio['precio_unitario'] = float(i_limpio.get('precio_unitario') or i_limpio.get('precio') or 0)
+                i_limpio['cantidad'] = int(i_limpio.get('cantidad', 1))
+                items_limpios.append(i_limpio)
+            ped['items_limpios'] = items_limpios
+
+            pedidos.append(ped)
+    
+    # Filtrar por usuario si no es admin
     if not usuario.get('es_admin', False):
         usuario_email = usuario.get('email')
-        pedidos = [p for p in pedidos if p.get('usuario_email') == usuario_email or p.get('usuario_id') == usuario.get('id')]
+        pedidos = [
+            p for p in pedidos 
+            if p.get('cliente_email') == usuario_email 
+            or p.get('usuario_email') == usuario_email
+        ]
 
     return render(request, 'mis_pedidos.html', {'pedidos': pedidos, 'usuario': usuario})
 
 def agregar_pedido_view(request):
+    """
+    Gestiona la adición de productos al pedido. Si el usuario ya tiene un pedido
+    en estado 'Pendiente', acumula el producto en ese mismo pedido en lugar de crear uno nuevo.
+    """
     token = request.session.get('access_token')
     usuario = request.session.get('usuario')
 
@@ -316,24 +367,116 @@ def agregar_pedido_view(request):
         precio = float(request.POST.get('precio', 0))
         cantidad = int(request.POST.get('cantidad', 1))
 
-        # Estructura del pedido que espera tu API / base de datos
-        datos_pedido = {
-            "producto_id": str(producto_id),
-            "producto_nombre": producto_nombre,
-            "cantidad": cantidad,
-            "precio_unitario": precio,
-            "total": precio * cantidad,
-            "usuario_email": usuario.get('email'),
-            "usuario_id": str(usuario.get('id', '')),
-            "estado": "Pendiente",
-            "direccion": usuario.get('direccion', 'Dirección no registrada'),
-            "telefono": usuario.get('telefono', 'S/N')
-        }
+        # 1. Obtenemos los pedidos actuales del usuario desde la API
+        pedidos_existentes = api_listar_pedidos(token) or []
+        usuario_email = usuario.get('email')
+        
+        # Buscamos si ya tiene un pedido activo en estado 'Pendiente'
+        pedido_pendiente = None
+        for p in pedidos_existentes:
+            if p.get('estado', '').lower() == 'pendiente' and (
+                p.get('cliente_email') == usuario_email or p.get('usuario_email') == usuario_email
+            ):
+                pedido_pendiente = p
+                break
 
-        exito, _ = api_crear_pedido(token, datos_pedido)
-        if exito:
-            messages.success(request, f"¡Pedido de {producto_nombre} agregado exitosamente!")
+        if pedido_pendiente:
+            # Si ya existe un pedido pendiente, actualizamos sus ítems
+            pedido_id = pedido_pendiente.get('id') or pedido_pendiente.get('_id')
+            items = pedido_pendiente.get('items', [])
+            
+            # Verificamos si el producto ya estaba en el pedido para sumar la cantidad
+            encontrado = False
+            for item in items:
+                if str(item.get('producto_id')) == str(producto_id):
+                    item['cantidad'] = int(item.get('cantidad', 1)) + cantidad
+                    encontrado = True
+                    break
+            
+            if not encontrado:
+                items.append({
+                    "producto_id": str(producto_id),
+                    "nombre": producto_nombre,
+                    "producto_nombre": producto_nombre,
+                    "cantidad": cantidad,
+                    "precio_unitario": precio
+                })
+            
+            # Recalculamos el total del pedido
+            nuevo_total = sum(float(i.get('precio_unitario', 0)) * int(i.get('cantidad', 1)) for i in items)
+            
+            datos_actualizados = {
+                "cliente_nombre": usuario.get('nombre', 'Cliente'),
+                "cliente_email": usuario_email,
+                "items": items,
+                "total": nuevo_total,
+                "estado": "Pendiente",
+                "direccion": usuario.get('direccion', 'Dirección no registrada'),
+                "telefono": usuario.get('telefono', 'S/N')
+            }
+            
+            # Llamamos al servicio para actualizar el pedido existente en la API
+            exito, _ = api_actualizar_pedido_cliente(token, pedido_id, datos_actualizados)
+            if exito:
+                messages.success(request, f"¡Se actualizó tu pedido con {producto_nombre}!")
+            else:
+                messages.error(request, "No se pudo actualizar el pedido.")
+                
         else:
-            messages.error(request, "No se pudo registrar el pedido. Inténtalo de nuevo.")
+            # Si no tiene pedido pendiente, creamos uno nuevo con un número de pedido generado
+            import random
+            numero_generado = f"TG-{random.randint(10000, 99999)}"
+            
+            datos_nuevo_pedido = {
+                "numero_pedido": numero_generado,
+                "cliente_nombre": usuario.get('nombre', 'Cliente'),
+                "cliente_email": usuario_email,
+                "items": [
+                    {
+                        "producto_id": str(producto_id),
+                        "nombre": producto_nombre,
+                        "producto_nombre": producto_nombre,
+                        "cantidad": cantidad,
+                        "precio_unitario": precio
+                    }
+                ],
+                "total": precio * cantidad,
+                "estado": "Pendiente",
+                "direccion": usuario.get('direccion', 'Dirección no registrada'),
+                "telefono": usuario.get('telefono', 'S/N')
+            }
+
+            exito, _ = api_crear_pedido(token, datos_nuevo_pedido)
+            if exito:
+                messages.success(request, f"¡Nuevo pedido creado con {producto_nombre}!")
+            else:
+                messages.error(request, "No se pudo registrar el pedido. Inténtalo de nuevo.")
 
     return redirect('mis_pedidos')
+
+def eliminar_pedido_admin_view(request, pedido_id):
+    """
+    =================================================================
+    VISTA: ELIMINAR PEDIDO ADMINISTRADOR
+    Valida que el usuario sea administrador y procede a eliminar 
+    el pedido seleccionado llamando al servicio de la API.
+    =================================================================
+    """
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    # Validación de seguridad: debe ser administrador autenticado
+    if not token or not usuario or not usuario.get('es_admin', False):
+        messages.error(request, "No tienes permisos de administrador para realizar esta acción.")
+        return redirect('login')
+
+    # Ejecuta la eliminación a través de la API de FastAPI
+    exito, _ = api_eliminar_pedido(token, pedido_id)
+    
+    if exito:
+        messages.success(request, "El pedido fue eliminado exitosamente del sistema.")
+    else:
+        messages.error(request, "No se pudo eliminar el pedido en la API.")
+
+    # Redirige de regreso al dashboard del administrador de forma segura
+    return redirect('dashboard')  # Asegúrate de que esta URL coincida con tu urls.py

@@ -114,3 +114,60 @@ def api_crear_pedido(token, datos_pedido):
     except Exception as e:
         print("ERROR EN api_crear_pedido:", str(e))
         return False, {"detail": str(e)}
+    
+def api_actualizar_pedido_cliente(token, pedido_id, datos_pedido):
+    """
+    Envía una solicitud PUT para actualizar un pedido existente en la API 
+    (útil cuando el cliente acumula o modifica productos en su pedido pendiente).
+    """
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.put(f"{API_URL}/pedidos/{pedido_id}", json=datos_pedido, headers=headers, timeout=5)
+        return response.status_code in [200, 201], response.json() if response.text.strip() else {}
+    except Exception as e:
+        return False, {"detail": str(e)}
+    
+def api_eliminar_pedido(token, pedido_id):
+    """
+    =================================================================
+    SERVICIO: ELIMINAR PEDIDO (ADMIN)
+    Envía una petición DELETE a la API para borrar un pedido específico.
+    =================================================================
+    """
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.delete(f"{API_URL}/pedidos/{pedido_id}", headers=headers, timeout=5)
+        return response.status_code in [200, 204], response.json() if response.text.strip() else {}
+    except Exception as e:
+        return False, {"detail": str(e)}
+    
+def api_eliminar_pedido(token, pedido_id):
+    """
+    =================================================================
+    SERVICIO: ELIMINAR PEDIDO (ADMIN)
+    Envía una petición DELETE a la API de FastAPI para eliminar 
+    un pedido específico del sistema de forma permanente.
+    Incluye trazas de depuración (print) para identificar errores en consola.
+    =================================================================
+    """
+    headers = {"Authorization": f"Bearer {token}"}
+    url = f"{API_URL}/pedidos/{pedido_id}"
+    
+    print(f"DEBUG: Intentando eliminar pedido en URL -> {url}")
+    
+    try:
+        response = requests.delete(url, headers=headers, timeout=5)
+        
+        # Imprime en la consola de Django la respuesta exacta de FastAPI
+        print(f"DEBUG DELETE RESPUESTA - Status: {response.status_code}")
+        print(f"DEBUG DELETE RESPUESTA - Body: {response.text}")
+        
+        # Retorna True si el código es exitoso (200 OK o 204 No Content)
+        if response.status_code in [200, 204]:
+            return True, response.json() if response.text.strip() else {}
+        else:
+            return False, response.json() if response.text.strip() else {"detail": response.text}
+            
+    except Exception as e:
+        print(f"DEBUG DELETE EXCEPTION: {e}")
+        return False, {"detail": str(e)}

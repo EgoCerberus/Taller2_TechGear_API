@@ -34,4 +34,5 @@ urlpatterns = [
     path('dashboard/pedidos/actualizar/<str:pedido_id>/', views.actualizar_estado_pedido_view, name='actualizar_estado_pedido'),
     path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
     path('catalogo/agregar/', views.agregar_pedido_view, name='agregar_pedido'),
+    path('admin-pedidos/eliminar/<str:pedido_id>/', views.eliminar_pedido_admin_view, name='eliminar_pedido_admin'),
 ]
