@@ -36,6 +36,9 @@ from seguridad import (
     verificar_password,
 )
 
+class EstadoUpdate(BaseModel):
+    estado: str
+    
 app = FastAPI(title="TechGear API", version="1.2.0")
 bearer = HTTPBearer(auto_error=False)
 
@@ -186,10 +189,95 @@ def registrar_pedido(pedido: PedidoCreate):
     return serializar(pedidos_collection.find_one({"_id": res.inserted_id}))
 
 
+# =========================================================================
+# ENDPOINT: LISTAR PEDIDOS
+# Retorna todos los pedidos registrados en la base de datos.
+# =========================================================================
 @app.get("/pedidos", response_model=List[PedidoOut], tags=["Pedidos"])
 def listar_pedidos():
     return [serializar(p) for p in pedidos_collection.find()]
 
+@app.get("/pedidos/{pedido_id}", response_model=PedidoOut, tags=["Pedidos"])
+def obtener_pedido(pedido_id: str, _: dict = Depends(usuario_actual)):
+    """
+    Obtiene el detalle completo de un pedido específico usando su ID.
+    Exige autenticación activa (usuario logueado).
+    """
+    pedido = pedidos_collection.find_one({"_id": to_oid(pedido_id)})
+    if not pedido:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+    return serializar(pedido)
+
+# =========================================================================
+# ENDPOINT: ACTUALIZAR PEDIDO (CLIENTE / ACUMULACIÓN)
+# Permite actualizar un pedido existente (como acumular ítems o modificar estado).
+# =========================================================================
+@app.put("/pedidos/{pedido_id}", tags=["Pedidos"])
+def actualizar_pedido(pedido_id: str, datos_actualizacion: dict):
+    res = pedidos_collection.update_one(
+        {"_id": to_oid(pedido_id)}, {"$set": datos_actualizacion}
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+    return {"mensaje": "Pedido actualizado exitosamente"}
+
+@app.patch("/pedidos/{pedido_id}/estado", tags=["Pedidos"])
+def actualizar_estado_pedido(
+    pedido_id: str, datos: EstadoUpdate, _: dict = Depends(solo_admin)
+):
+    """
+    Actualiza el estado de un pedido (ej: pendiente, enviado, completado, cancelado).
+    Exige rol de administrador.
+    """
+    estados_validos = ["pendiente", "enviado", "completado", "cancelado"]
+    if datos.estado not in estados_validos:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            f"Estado inválido. Debe ser uno de: {', '.join(estados_validos)}"
+        )
+        
+    res = pedidos_collection.update_one(
+        {"_id": to_oid(pedido_id)},
+        {"$set": {"estado": datos.estado}}
+    )
+    
+    if res.matched_count == 0:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+        
+    return {"mensaje": f"Estado del pedido actualizado a '{datos.estado}' exitosamente"}
+
+# =========================================================================
+# ENDPOINT: ELIMINAR PEDIDO (ADMIN) + REINTEGRO DE STOCK
+# Elimina un pedido y devuelve automáticamente las cantidades al stock 
+# de los productos correspondientes. Exige rol de administrador.
+# =========================================================================
+@app.delete("/pedidos/{pedido_id}", tags=["Pedidos"])
+def eliminar_pedido(pedido_id: str, _: dict = Depends(solo_admin)):
+    oid = to_oid(pedido_id)
+    pedido = pedidos_collection.find_one({"_id": oid})
+    
+    if not pedido:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+    
+    # REINTEGRO DE STOCK: Devuelve la cantidad comprada al inventario del producto
+    for item in pedido.get("items", []):
+        prod_id = item.get("producto_id")
+        cantidad = item.get("cantidad", 0)
+        if prod_id and cantidad > 0:
+            try:
+                productos_collection.update_one(
+                    {"_id": to_oid(prod_id)},
+                    {"$inc": {"stock": cantidad}}
+                )
+            except Exception:
+                pass # Evita que falle si el producto original fue borrado de la BD
+
+    # Procedemos a eliminar el pedido
+    res = pedidos_collection.delete_one({"_id": oid})
+    if res.deleted_count == 0:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+        
+    return {"mensaje": "Pedido eliminado y stock reintegrado exitosamente"}
 
 # ---------- Usuarios (registro, login con JWT, perfil) ----------
 @app.post(
