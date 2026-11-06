@@ -98,16 +98,22 @@
                     <small class="text-muted mb-2">{{ p.categoria|default:"Otros" }}</small>
                     <div class="mt-auto">
                         {% if p.precio_anterior %}<div class="old-price">${{ p.precio_anterior|floatformat:"0g" }}</div>{% endif %}
-                        <div class="fw-bold fs-5">${{ p.precio|default:0|floatformat:"0g" }}</div>
-                        {% if p.stock is not None %}
-                            {% if p.stock > 5 %}
-                                <small class="text-success"><i class="bi bi-check-circle"></i> Disponible ({{ p.stock }})</small>
-                            {% elif p.stock > 0 %}
-                                <small class="text-warning"><i class="bi bi-exclamation-circle"></i> Últimas {{ p.stock }} unidades</small>
-                            {% else %}
-                                <small class="text-danger"><i class="bi bi-x-circle"></i> Agotado</small>
-                            {% endif %}
-                        {% endif %}
+                        <div class="fw-bold fs-5 mb-2">${{ p.precio|default:0|floatformat:"0g" }}</div>
+                        
+                        <!-- Stock visible siempre -->
+                        <div class="mb-2">
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi bi-box-seam"></i> Stock disponible: <strong>{{ p.stock|default:0 }}</strong>
+                            </span>
+                        </div>
+
+                        <!-- Botón Agregar con selector de cantidad para el cliente -->
+                        <div class="input-group input-group-sm">
+                            <input type="number" id="qty-{{ p.id|default:forloop.counter }}" class="form-control text-center" value="1" min="1" max="{{ p.stock|default:10 }}">
+                            <button class="btn btn-brand" type="button" onclick="alert('Producto agregado al pedido')">
+                                <i class="bi bi-cart-plus"></i> Agregar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
