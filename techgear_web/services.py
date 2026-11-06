@@ -81,3 +81,36 @@ def api_eliminar_producto(token, producto_id):
         return response.status_code == 200, response.json()
     except Exception as e:
         return False, {"detail": str(e)}
+    
+    # PEDIDOS #
+    
+def api_listar_pedidos(token):
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.get(f"{API_URL}/pedidos/", headers=headers)
+        return response.json() if response.status_code == 200 else []
+    except Exception:
+        return []
+
+def api_actualizar_estado_pedido(token, pedido_id, nuevo_estado):
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.patch(
+            f"{API_URL}/pedidos/{pedido_id}/estado",
+            json={"estado": nuevo_estado},
+            headers=headers
+        )
+        return response.status_code == 200, response.json()
+    except Exception:
+        return False, {}
+    
+def api_crear_pedido(token, datos_pedido):
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.post(f"{API_URL}/pedidos/", json=datos_pedido, headers=headers, timeout=5)
+        print("STATUS CREAR PEDIDO:", response.status_code)
+        print("RESPUESTA CREAR PEDIDO:", response.text)
+        return response.status_code in [200, 201], response.json() if response.text.strip() else {}
+    except Exception as e:
+        print("ERROR EN api_crear_pedido:", str(e))
+        return False, {"detail": str(e)}

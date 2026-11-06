@@ -107,13 +107,20 @@
                             </span>
                         </div>
 
-                        <!-- Botón Agregar con selector de cantidad para el cliente -->
-                        <div class="input-group input-group-sm">
-                            <input type="number" id="qty-{{ p.id|default:forloop.counter }}" class="form-control text-center" value="1" min="1" max="{{ p.stock|default:10 }}">
-                            <button class="btn btn-brand" type="button" onclick="alert('Producto agregado al pedido')">
-                                <i class="bi bi-cart-plus"></i> Agregar
-                            </button>
-                        </div>
+                        <!-- Formulario dinámico para agregar al pedido -->
+                        <form method="post" action="{% url 'agregar_pedido' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="producto_id" value="{{ p.id }}">
+                            <input type="hidden" name="producto_nombre" value="{{ p.nombre }}">
+                            <input type="hidden" name="precio" value="{{ p.precio }}">
+
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="cantidad" id="qty-{{ forloop.counter }}" class="form-control text-center" value="1" min="1" max="{{ p.stock|default:10 }}">
+                                <button class="btn btn-brand" type="submit">
+                                    <i class="bi bi-cart-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

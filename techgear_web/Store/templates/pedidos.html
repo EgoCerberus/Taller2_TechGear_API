@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-4">
+    
+    <!-- Cabecera de Pedidos -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="bg-primary-subtle text-primary p-2 rounded-3">
+                    <i class="bi bi-receipt fs-5"></i>
+                </div>
+                <h2 class="fw-bold text-dark mb-0">Pedidos</h2>
+            </div>
+            <p class="text-muted mb-0">Revisa los envíos y actualiza su estado.</p>
+        </div>
+        <div>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver al dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Píldoras de Filtro por Estado -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="?estado=todos" class="btn {% if estado_filtro == 'todos' %}btn-primary text-white{% else %}btn-light border text-muted{% endif %} rounded-pill px-3 py-1 btn-sm fw-semibold text-decoration-none">
+            Todos <span class="badge {% if estado_filtro == 'todos' %}bg-white text-primary{% else %}bg-secondary-subtle text-dark{% endif %} ms-1">{{ conteo_todos }}</span>
+        </a>
+        <a href="?estado=Pendiente" class="btn {% if estado_filtro == 'pendiente' %}btn-primary text-white{% else %}btn-light border text-muted{% endif %} rounded-pill px-3 py-1 btn-sm fw-semibold text-decoration-none">
+            Pendientes <span class="badge {% if estado_filtro == 'pendiente' %}bg-white text-primary{% else %}bg-secondary-subtle text-dark{% endif %} ms-1">{{ conteo_pendientes }}</span>
+        </a>
+        <a href="?estado=Enviado" class="btn {% if estado_filtro == 'enviado' %}btn-primary text-white{% else %}btn-light border text-muted{% endif %} rounded-pill px-3 py-1 btn-sm fw-semibold text-decoration-none">
+            Enviados <span class="badge {% if estado_filtro == 'enviado' %}bg-white text-primary{% else %}bg-secondary-subtle text-dark{% endif %} ms-1">{{ conteo_enviados }}</span>
+        </a>
+        <a href="?estado=Entregado" class="btn {% if estado_filtro == 'entregado' %}btn-primary text-white{% else %}btn-light border text-muted{% endif %} rounded-pill px-3 py-1 btn-sm fw-semibold text-decoration-none">
+            Entregados <span class="badge {% if estado_filtro == 'entregado' %}bg-white text-primary{% else %}bg-secondary-subtle text-dark{% endif %} ms-1">{{ conteo_entregados }}</span>
+        </a>
+        <a href="?estado=Cancelado" class="btn {% if estado_filtro == 'cancelado' %}btn-primary text-white{% else %}btn-light border text-muted{% endif %} rounded-pill px-3 py-1 btn-sm fw-semibold text-decoration-none">
+            Cancelados <span class="badge {% if estado_filtro == 'cancelado' %}bg-white text-primary{% else %}bg-secondary-subtle text-dark{% endif %} ms-1">{{ conteo_cancelados }}</span>
+        </a>
+    </div>
+
+    <!-- Lista / Tarjetas de Pedidos -->
+    <div class="d-flex flex-column gap-3">
+        {% for pedido in pedidos %}
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            
+            <!-- Cabecera del Pedido: Usuario y Estado -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Avatar con la inicial -->
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 45px; height: 45px; min-width: 45px;">
+                        {{ pedido.usuario_nombre|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">{{ pedido.usuario_nombre }}</h6>
+                        <small class="text-muted">Pedido #{{ pedido.codigo }} • {{ pedido.fecha }}</small>
+                    </div>
+                </div>
+                <!-- Estado actual -->
+                <div>
+                    {% if pedido.estado == 'Enviado' %}
+                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fw-semibold">
+                            <i class="bi bi-truck me-1"></i> Enviado
+                        </span>
+                    {% elif pedido.estado == 'Pendiente' %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2 fw-semibold">
+                            <i class="bi bi-clock me-1"></i> Pendiente
+                        </span>
+                    {% else %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
+                            {{ pedido.estado }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Detalle de Productos del Pedido -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-box-seam text-primary"></i>
+                        <span class="fw-semibold text-dark">{{ pedido.producto_nombre }} x {{ pedido.cantidad }}</span>
+                    </div>
+                    <span class="text-muted small">${{ pedido.precio_unitario }} c/u</span>
+                </div>
+
+                <!-- Dirección y Teléfono en caja sutil -->
+                <div class="border rounded-3 p-2 px-3 text-muted small d-flex align-items-center gap-2 bg-white">
+                    <i class="bi bi-geo-alt text-primary fs-5"></i>
+                    <span>{{ pedido.direccion }}, Tel. {{ pedido.telefono }}</span>
+                </div>
+            </div>
+
+            <!-- Pie de Tarjeta: Total y Selector para actualizar estado -->
+            <div class="d-flex justify-content-between align-items-center pt-2">
+                <div class="fs-5 fw-bold text-dark">
+                    Total <span class="text-primary">${{ pedido.total }}</span>
+                </div>
+
+                <!-- Formulario para cambiar estado -->
+                <form method="POST" action="{% url 'actualizar_estado_pedido' pedido.id %}" class="d-flex align-items-center gap-2">
+                    {% csrf_token %}
+                    <select name="estado" class="form-select form-select-sm rounded-3">
+                        <option value="Pendiente" {% if pedido.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="Enviado" {% if pedido.estado == 'Enviado' %}selected{% endif %}>Enviado</option>
+                        <option value="Entregado" {% if pedido.estado == 'Entregado' %}selected{% endif %}>Entregado</option>
+                        <option value="Cancelado" {% if pedido.estado == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary rounded-3 px-3">
+                        <i class="bi bi-check-lg me-1"></i> Guardar
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% empty %}
+        <!-- Estado vacío si no hay pedidos -->
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+            <h5 class="text-muted fw-bold">No hay pedidos registrados</h5>
+            <p class="text-muted small">Los nuevos pedidos de los clientes aparecerán aquí.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

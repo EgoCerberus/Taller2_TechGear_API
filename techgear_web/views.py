@@ -8,7 +8,10 @@ from services import (
     api_registrar_usuario,
     api_crear_producto,
     api_eliminar_producto,
-    api_actualizar_producto
+    api_actualizar_producto,
+    api_listar_pedidos,           
+    api_actualizar_estado_pedido,
+    api_crear_pedido  
 )
 try:
     from services import api_recuperar_password
@@ -65,22 +68,26 @@ def _grupo_de(categoria):
 def catalogo_view(request):
     usuario = request.session.get('usuario')
 
-    # 1) Destacados de techstore + productos reales de la API
-    destacados = [dict(p) for p in PRODUCTOS_DESTACADOS]
-    nombres_destacados = {_norm(p['nombre']) for p in destacados}
-    api = [
-        dict(p) for p in (api_listar_productos() or [])
-        if isinstance(p, dict) and _norm(p.get('nombre')) not in nombres_destacados
-    ]
-    productos = destacados + api
+    # 1) Obtener productos de la API
+    productos_api = api_listar_productos() or []
+    productos = []
+    for p in productos_api:
+        if isinstance(p, dict):
+            prod = dict(p)
+            # Normalizar el ID para evitar guiones bajos en el template de Django
+            if '_id' in prod and isinstance(prod['_id'], dict):
+                prod['id'] = prod['_id'].get('$oid') or str(prod['_id'])
+            elif '_id' in prod:
+                prod['id'] = str(prod['_id'])
+            
+            grupo = _grupo_de(prod.get('categoria'))
+            prod['grupo'] = grupo['nombre'] if grupo else prod.get('categoria', 'General')
+            prod['icono'] = grupo['icono'] if grupo else 'bi-box-seam'
+            if 'stock' not in prod:
+                prod['stock'] = 0
+            productos.append(prod)
 
-    # 2) Ubicar cada producto en una categoría del catálogo
-    for p in productos:
-        grupo = _grupo_de(p.get('categoria'))
-        p['grupo'] = grupo['nombre'] if grupo else ''
-        p['icono'] = grupo['icono'] if grupo else 'bi-box-seam'
-
-    # 3) Búsqueda (?q=...)
+    # 2) Búsqueda (?q=...)
     q = request.GET.get('q', '').strip()
     qn = _norm(q)
     if qn:
@@ -89,7 +96,7 @@ def catalogo_view(request):
             if qn in _norm(p.get('nombre')) or qn in _norm(p.get('categoria'))
         ]
 
-    # 4) Categorías con su cantidad de productos (después de buscar)
+    # 3) Categorías y filtros
     categoria_sel = request.GET.get('categoria', '').strip()
     categorias = [
         {**c, 'cantidad': sum(1 for p in productos if p['grupo'] == c['nombre']),
@@ -97,7 +104,6 @@ def catalogo_view(request):
         for c in CATEGORIAS
     ]
 
-    # 5) Filtro por categoría (?categoria=...)
     if categoria_sel:
         productos = [p for p in productos if p['grupo'] == categoria_sel]
 
@@ -221,3 +227,113 @@ def editar_producto_view(request, producto_id):
         return redirect('dashboard')
 
     return render(request, 'editar_producto.html', {'producto_id': producto_id})
+
+# ---------------------------------------------------------------------------
+# Gestión de Pedidos (Administrador)
+# ---------------------------------------------------------------------------
+
+def lista_pedidos_view(request):
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    # Validar permisos de administrador
+    if not token or not usuario or not usuario.get('es_admin', False):
+        messages.error(request, "Acceso denegado. Se requieren permisos de administrador.")
+        return redirect('login')
+
+    todos_pedidos = api_listar_pedidos(token) or []
+
+    # Calcular contadores reales basados en los datos de la API
+    conteo_todos = len(todos_pedidos)
+    conteo_pendientes = sum(1 for p in todos_pedidos if p.get('estado') == 'Pendiente')
+    conteo_enviados = sum(1 for p in todos_pedidos if p.get('estado') == 'Enviado')
+    conteo_entregados = sum(1 for p in todos_pedidos if p.get('estado') == 'Entregado')
+    conteo_cancelados = sum(1 for p in todos_pedidos if p.get('estado') == 'Cancelado')
+
+    # Filtrar según el parámetro GET (?estado=...)
+    estado_filtro = request.GET.get('estado', 'todos').lower()
+    if estado_filtro != 'todos':
+        pedidos = [p for p in todos_pedidos if p.get('estado', '').lower() == estado_filtro]
+    else:
+        pedidos = todos_pedidos
+
+    return render(request, 'pedidos.html', {
+        'pedidos': pedidos,
+        'usuario': usuario,
+        'estado_filtro': estado_filtro,
+        'conteo_todos': conteo_todos,
+        'conteo_pendientes': conteo_pendientes,
+        'conteo_enviados': conteo_enviados,
+        'conteo_entregados': conteo_entregados,
+        'conteo_cancelados': conteo_cancelados,
+    })
+
+def actualizar_estado_pedido_view(request, pedido_id):
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    if not token or not usuario or not usuario.get('es_admin', False):
+        return redirect('login')
+
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        exito, _ = api_actualizar_estado_pedido(token, pedido_id, nuevo_estado)
+        if exito:
+            messages.success(request, "Estado del pedido actualizado correctamente.")
+        else:
+            messages.error(request, "Error al actualizar el estado del pedido.")
+
+    return redirect('lista_pedidos')
+
+def mis_pedidos_view(request):
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    if not token or not usuario:
+        return redirect('login')
+
+    # Reutilizamos o llamamos al servicio que filtra los pedidos del cliente logueado
+    pedidos = api_listar_pedidos(token) or []
+    
+    # Si el usuario no es admin, filtramos solo sus pedidos (opcional según cómo devuelva la API)
+    if not usuario.get('es_admin', False):
+        usuario_email = usuario.get('email')
+        pedidos = [p for p in pedidos if p.get('usuario_email') == usuario_email or p.get('usuario_id') == usuario.get('id')]
+
+    return render(request, 'mis_pedidos.html', {'pedidos': pedidos, 'usuario': usuario})
+
+def agregar_pedido_view(request):
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    if not token or not usuario:
+        messages.error(request, "Debes iniciar sesión para realizar un pedido.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        producto_id = request.POST.get('producto_id')
+        producto_nombre = request.POST.get('producto_nombre')
+        precio = float(request.POST.get('precio', 0))
+        cantidad = int(request.POST.get('cantidad', 1))
+
+        # Estructura del pedido que espera tu API / base de datos
+        datos_pedido = {
+            "producto_id": str(producto_id),
+            "producto_nombre": producto_nombre,
+            "cantidad": cantidad,
+            "precio_unitario": precio,
+            "total": precio * cantidad,
+            "usuario_email": usuario.get('email'),
+            "usuario_id": str(usuario.get('id', '')),
+            "estado": "Pendiente",
+            "direccion": usuario.get('direccion', 'Dirección no registrada'),
+            "telefono": usuario.get('telefono', 'S/N')
+        }
+
+        exito, _ = api_crear_pedido(token, datos_pedido)
+        if exito:
+            messages.success(request, f"¡Pedido de {producto_nombre} agregado exitosamente!")
+        else:
+            messages.error(request, "No se pudo registrar el pedido. Inténtalo de nuevo.")
+
+    return redirect('mis_pedidos')

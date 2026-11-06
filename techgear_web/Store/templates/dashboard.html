@@ -1,41 +1,113 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Panel de Administración - Dashboard</h2>
-    <a href="{% url 'crear_producto' %}" class="btn btn-primary">Crear Nuevo Producto</a>
-</div>
+<div class="container my-4">
+    
+    <!-- Botón superior o cabecera adicional si deseas -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary-subtle text-primary rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; min-width: 50px;">
+                <i class="bi bi-speedometer2 fs-4"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold text-dark mb-0">Panel de administración</h2>
+                <p class="text-muted mb-0">Gestiona el inventario y catálogo de TechGear.</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'lista_pedidos' %}" class="btn btn-outline-primary rounded-pill px-3 py-2">
+                <i class="bi bi-receipt me-1"></i> Pedidos
+            </a>
+            <a href="{% url 'crear_producto' %}" class="btn btn-primary rounded-pill px-3 py-2">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo producto
+            </a>
+        </div>
+    </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in productos %}
-                <tr>
-                    <td>{{ p.nombre }}</td>
-                    <td>{{ p.categoria }}</td>
-                    <td>${{ p.precio }}</td>
-                    <td>{{ p.stock }}</td>
-                    <td>
-                        <a href="{% url 'editar_producto' p.id %}" class="btn btn-warning btn-sm">Editar</a>
-                        <a href="{% url 'eliminar_producto' p.id %}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este producto?');">Eliminar</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center text-muted">No hay productos registrados.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Contenedor principal de Productos (Estilo idéntico a la imagen) -->
+    <div class="card shadow-sm border-0 rounded-4 p-3">
+        
+        <!-- Cabecera de la Tarjeta -->
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam fs-5 text-muted"></i>
+                <h5 class="mb-0 fw-bold text-dark">Productos</h5>
+            </div>
+            <!-- Contador de productos -->
+            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold">
+                {{ productos|length }}
+            </span>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-3">Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prod in productos %}
+                    <tr>
+                        <!-- Columna Producto: Imagen miniatura + Nombre -->
+                        <td class="ps-3 py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if prod.imagen %}
+                                    <img src="{{ prod.imagen }}" alt="{{ prod.nombre }}" class="rounded-3 border" style="width: 45px; height: 45px; object-fit: cover;">
+                                {% else %}
+                                    <!-- Imagen por defecto si el producto no tiene foto -->
+                                    <div class="bg-light rounded-3 border d-flex align-items-center justify-content-center text-secondary" style="width: 45px; height: 45px; min-width: 45px;">
+                                        <i class="bi bi-image fs-6"></i>
+                                    </div>
+                                {% endif %}
+                                <span class="fw-bold text-dark">{{ prod.nombre }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Columna Categoría (Estilo Badge suave) -->
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1 rounded-pill">
+                                {{ prod.categoria }}
+                            </span>
+                        </td>
+
+                        <!-- Columna Precio -->
+                        <td class="fw-bold text-dark">
+                            ${{ prod.precio|floatformat:0 }}
+                        </td>
+
+                        <!-- Columna Stock (Estilo Pastilla Verde) -->
+                        <td>
+                            <span class="badge bg-success text-white rounded-pill px-2 py-1 fw-bold">
+                                {{ prod.stock }}
+                            </span>
+                        </td>
+
+                        <!-- Columna Acciones (Botones de Editar y Eliminar) -->
+                        <td class="text-end pe-3">
+                            <a href="{% url 'editar_producto' prod.id %}" class="btn btn-sm btn-outline-primary rounded-2 px-2 py-1 me-1" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'eliminar_producto' prod.id %}" class="btn btn-sm btn-outline-danger rounded-2 px-2 py-1" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este producto?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No hay productos registrados en el sistema.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
