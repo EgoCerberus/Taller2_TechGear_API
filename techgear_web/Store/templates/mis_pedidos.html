@@ -35,7 +35,7 @@
   <!-- Itera sobre cada pedido registrado y construye su tarjeta visual. -->
   <!-- ================================================================= -->
   <div class="d-flex flex-column gap-3">
-    {% for pedido in pedidos %}
+    {% if pedidos %} {% for pedido in pedidos %}
     <div class="card shadow-sm border-0 rounded-4 p-4">
       <!-- Subsección 2.1: Cabecera del pedido (Número, Fecha y Estado) -->
       <div
@@ -88,7 +88,6 @@
 
       <!-- Subsección 2.2: Detalle de productos y ubicación de entrega -->
       <div class="mb-3">
-        <!-- Recorre los items limpios contenidos en el pedido -->
         {% for item in pedido.items_limpios %}
         <div
           class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-2"
@@ -107,16 +106,48 @@
             </div>
           </div>
 
-          <!-- Cantidad del producto actual en el pedido -->
+          <!-- Controles de cantidad y botones de acción por ítem (Solo si está Pendiente) -->
           <div class="d-flex align-items-center gap-3">
+            {% if pedido.estado|lower == 'pendiente' %}
+            <div class="btn-group btn-group-sm" role="group">
+              <a
+                href="{% url 'modificar_item_pedido' pedido.id item.producto_id 'restar' %}"
+                class="btn btn-outline-secondary"
+                title="Restar unidad"
+              >
+                <i class="bi bi-dash"></i>
+              </a>
+              <span
+                class="btn btn-light border disabled fw-bold text-dark px-3"
+                style="opacity: 1"
+              >
+                {{ item.cantidad }}
+              </span>
+              <a
+                href="{% url 'modificar_item_pedido' pedido.id item.producto_id 'sumar' %}"
+                class="btn btn-outline-secondary"
+                title="Sumar unidad"
+              >
+                <i class="bi bi-plus"></i>
+              </a>
+            </div>
+            <a
+              href="{% url 'modificar_item_pedido' pedido.id item.producto_id 'eliminar' %}"
+              class="btn btn-outline-danger btn-sm rounded-3"
+              title="Eliminar producto"
+            >
+              <i class="bi bi-trash"></i>
+            </a>
+            {% else %}
             <span class="badge bg-primary rounded-pill px-3 py-2 fs-6"
               >Cant: {{ item.cantidad }}</span
             >
+            {% endif %}
           </div>
         </div>
         {% endfor %}
 
-        <!-- Dirección y Teléfono de contacto del cliente (con texto amigable si no están registrados) -->
+        <!-- Dirección y Teléfono de contacto del cliente -->
         <div
           class="border rounded-3 p-2 px-3 text-muted small d-flex align-items-center gap-2 bg-white"
         >
@@ -128,17 +159,45 @@
         </div>
       </div>
 
-      <!-- Subsección 2.3: Total monetario de la transacción -->
+      <!-- Subsección 2.3: Total monetario y Acciones del Cliente -->
       <div
-        class="d-flex justify-content-between align-items-center pt-2 border-top"
+        class="d-flex justify-content-between align-items-center pt-3 border-top mt-3"
       >
-        <span class="text-muted fw-semibold">Total del Pedido</span>
-        <span class="fs-5 fw-bold text-success"
-          >${{ pedido.total|default:0|floatformat:"0g" }}</span
-        >
+        <div class="fs-5 fw-bold text-dark">
+          Total
+          <span class="text-success"
+            >${{ pedido.total|default:0|floatformat:"0g" }}</span
+          >
+        </div>
+
+        <!-- Si el pedido está Pendiente, permitimos al cliente cancelarlo -->
+        {% if pedido.estado|lower == 'pendiente' %}
+        <div class="d-flex align-items-center gap-2">
+          <form
+            method="POST"
+            action="{% url 'cancelar_pedido_cliente' pedido.id %}"
+            onsubmit="
+              return confirm(
+                '¿Estás seguro de que deseas cancelar y eliminar tu pedido?',
+              );
+            "
+            class="m-0"
+          >
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="btn btn-outline-danger rounded-3 px-3 d-flex align-items-center justify-content-center text-nowrap"
+              style="height: 38px"
+              title="Cancelar pedido"
+            >
+              <i class="bi bi-trash me-1"></i> Cancelar pedido
+            </button>
+          </form>
+        </div>
+        {% endif %}
       </div>
     </div>
-    {% empty %}
+    {% endfor %} {% else %}
     <!-- ================================================================= -->
     <!-- SECCIÓN 3: ESTADO VACÍO (SIN COMPRAS)                            -->
     <!-- Se muestra únicamente si el usuario no registra ningún pedido.   -->
@@ -155,7 +214,7 @@
         >Ir al catálogo</a
       >
     </div>
-    {% endfor %}
+    {% endif %}
   </div>
 </div>
 {% endblock %}

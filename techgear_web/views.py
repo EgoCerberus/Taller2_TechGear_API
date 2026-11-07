@@ -214,6 +214,15 @@ def eliminar_producto_view(request, producto_id):
 
 def editar_producto_view(request, producto_id):
     token = request.session.get('access_token')
+    
+    productos = api_listar_productos() or []
+    producto_actual = None
+    for p in productos:
+        p_id = p.get('id') or (p.get('_id', {}).get('$oid') if isinstance(p.get('_id'), dict) else str(p.get('_id', '')))
+        if str(p_id) == str(producto_id):
+            producto_actual = p
+            break
+
     if request.method == 'POST':
         datos = {
             "nombre": request.POST.get('nombre'),
@@ -228,7 +237,11 @@ def editar_producto_view(request, producto_id):
             messages.error(request, "Error al actualizar el producto.")
         return redirect('dashboard')
 
-    return render(request, 'editar_producto.html', {'producto_id': producto_id})
+    return render(request, 'editar_producto.html', {
+        'producto_id': producto_id,
+        'producto': producto_actual,
+        'usuario': request.session.get('usuario')  
+    })
 
 # ---------------------------------------------------------------------------
 # Gestión de Pedidos (Administrador)
@@ -338,14 +351,23 @@ def mis_pedidos_view(request):
 
             pedidos.append(ped)
     
-    # Filtrar por usuario si no es admin
-    if not usuario.get('es_admin', False):
-        usuario_email = usuario.get('email')
-        pedidos = [
-            p for p in pedidos 
-            if p.get('cliente_email') == usuario_email 
-            or p.get('usuario_email') == usuario_email
-        ]
+    # Filtrar por usuario y excluir totalmente los pedidos cancelados
+    usuario_email = usuario.get('email')
+    es_admin = usuario.get('es_admin', False)
+
+    pedidos_filtrados = []
+    for p in pedidos:
+        # Omitir pedidos que estén cancelados
+        if p.get('estado', '').lower() == 'cancelado':
+            continue
+            
+        if not es_admin:
+            if p.get('cliente_email') == usuario_email or p.get('usuario_email') == usuario_email:
+                pedidos_filtrados.append(p)
+        else:
+            pedidos_filtrados.append(p)
+
+    pedidos = pedidos_filtrados
 
     return render(request, 'mis_pedidos.html', {'pedidos': pedidos, 'usuario': usuario})
 
@@ -480,3 +502,104 @@ def eliminar_pedido_admin_view(request, pedido_id):
 
     # Redirige de regreso al dashboard del administrador de forma segura
     return redirect('dashboard')  # Asegúrate de que esta URL coincida con tu urls.py
+
+def modificar_item_pedido_view(request, pedido_id, producto_id, accion):
+    """
+    Permite al cliente sumar, restar o eliminar un producto específico 
+    de su pedido pendiente directamente desde 'Mis pedidos'.
+    """
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    if not token or not usuario:
+        return redirect('login')
+
+    pedidos_existentes = api_listar_pedidos(token) or []
+    pedido_encontrado = None
+    
+    for p in pedidos_existentes:
+        p_id = p.get('id') or p.get('_id')
+        if str(p_id) == str(pedido_id) and p.get('estado', '').lower() == 'pendiente':
+            pedido_encontrado = p
+            break
+
+    if not pedido_encontrado:
+        messages.error(request, "No se encontró el pedido o ya no está pendiente.")
+        return redirect('mis_pedidos')
+
+    items = pedido_encontrado.get('items', [])
+    nuevos_items = []
+
+    for item in items:
+        i_prod_id = str(item.get('producto_id') or item.get('_id', ''))
+        if i_prod_id == str(producto_id):
+            cantidad_actual = int(item.get('cantidad', 1))
+            
+            if accion == 'sumar':
+                item['cantidad'] = cantidad_actual + 1
+                nuevos_items.append(item)
+            elif accion == 'restar':
+                if cantidad_actual > 1:
+                    item['cantidad'] = cantidad_actual - 1
+                    nuevos_items.append(item)
+            elif accion == 'eliminar':
+                pass # Se omite para borrarlo
+        else:
+            nuevos_items.append(item)
+
+    # Si el pedido se queda sin ítems, lo actualizamos a estado "Cancelado"
+    if not nuevos_items:
+        datos_cancelado = {
+            "cliente_nombre": pedido_encontrado.get('cliente_nombre', usuario.get('nombre')),
+            "cliente_email": pedido_encontrado.get('cliente_email', usuario.get('email')),
+            "items": [],
+            "total": 0,
+            "estado": "Cancelado",
+            "direccion": pedido_encontrado.get('direccion', 'Dirección no registrada'),
+            "telefono": pedido_encontrado.get('telefono', 'S/N')
+        }
+        api_actualizar_pedido_cliente(token, pedido_id, datos_cancelado)
+        messages.info(request, "Tu pedido se quedó sin productos y fue cancelado.")
+        return redirect('mis_pedidos')
+
+    # Recalculamos el total
+    nuevo_total = sum(float(i.get('precio_unitario', 0)) * int(i.get('cantidad', 1)) for i in nuevos_items)
+
+    datos_actualizados = {
+        "cliente_nombre": pedido_encontrado.get('cliente_nombre', usuario.get('nombre')),
+        "cliente_email": pedido_encontrado.get('cliente_email', usuario.get('email')),
+        "items": nuevos_items,
+        "total": nuevo_total,
+        "estado": "Pendiente",
+        "direccion": pedido_encontrado.get('direccion', 'Dirección no registrada'),
+        "telefono": pedido_encontrado.get('telefono', 'S/N')
+    }
+
+    exito, _ = api_actualizar_pedido_cliente(token, pedido_id, datos_actualizados)
+    if exito:
+        messages.success(request, "Pedido actualizado exitosamente.")
+    else:
+        messages.error(request, "Error al actualizar el pedido.")
+
+    return redirect('mis_pedidos')
+
+def cancelar_pedido_cliente_view(request, pedido_id):
+    """
+    Permite al cliente cancelar su propio pedido si está en estado Pendiente,
+    liberando el stock y removiéndolo de su vista.
+    """
+    token = request.session.get('access_token')
+    usuario = request.session.get('usuario')
+
+    if not token or not usuario:
+        return redirect('login')
+
+    # Llamamos a la API para eliminar/cancelar el pedido del cliente
+    exito, _ = api_eliminar_pedido(token, pedido_id)
+    
+    if exito:
+        messages.success(request, "Tu pedido ha sido cancelado exitosamente y los productos regresaron al stock.")
+    else:
+        messages.error(request, "No se pudo cancelar el pedido. Inténtalo de nuevo.")
+
+    return redirect('mis_pedidos')

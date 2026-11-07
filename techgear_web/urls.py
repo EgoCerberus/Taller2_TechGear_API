@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 import views # Importa las vistas desde el mismo directorio
 
 urlpatterns = [
@@ -35,4 +37,10 @@ urlpatterns = [
     path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
     path('catalogo/agregar/', views.agregar_pedido_view, name='agregar_pedido'),
     path('admin-pedidos/eliminar/<str:pedido_id>/', views.eliminar_pedido_admin_view, name='eliminar_pedido_admin'),
+    path('mis-pedidos/item/<str:pedido_id>/<str:producto_id>/<str:accion>/', views.modificar_item_pedido_view, name='modificar_item_pedido'),
+    path('mis-pedidos/cancelar/<str:pedido_id>/', views.cancelar_pedido_cliente_view, name='cancelar_pedido_cliente'),
 ]
+
+# Servir archivos estáticos en desarrollo (DEBUG = True)
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()

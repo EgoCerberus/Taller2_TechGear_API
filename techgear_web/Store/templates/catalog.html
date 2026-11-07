@@ -1,159 +1,290 @@
 {% extends "base.html" %}
 {% load l10n %}
+{% load static %}
 
 {% block title %}TechGear - Catálogo{% endblock %}
 
 {% block extra_head %}
 <style>
-    .page-head { background: linear-gradient(135deg, var(--dark) 0%, #1e1b4b 60%, var(--brand-2) 140%); color: #fff; border-radius: 1rem; }
-    .cat-card { border: 2px solid transparent; transition: transform .2s, box-shadow .2s; }
-    .cat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,.1); }
-    .cat-card i { font-size: 2.2rem; color: var(--brand); }
-    .cat-card.activa { border-color: var(--brand); background: #eff6ff; }
-    .product-card { border: 0; transition: transform .2s, box-shadow .2s; }
-    .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,.12); }
-    .product-img { height: 170px; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #fff; border-radius: .5rem .5rem 0 0; background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
-    .old-price { text-decoration: line-through; color: #94a3b8; font-size: .9rem; }
-    section[id] { scroll-margin-top: 80px; }
+  .page-head {
+    background: linear-gradient(
+      135deg,
+      var(--dark) 0%,
+      #1e1b4b 60%,
+      var(--brand-2) 140%
+    );
+    color: #fff;
+    border-radius: 1rem;
+  }
+  .cat-card {
+    border: 2px solid transparent;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+  .cat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  .cat-card i {
+    font-size: 2.2rem;
+    color: var(--brand);
+  }
+  .cat-card.activa {
+    border-color: var(--brand);
+    background: #eff6ff;
+  }
+  .product-card {
+    border: 0;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  }
+  .product-img {
+    height: 170px;
+    overflow: hidden;
+    background: #f8f9fa;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+  .old-price {
+    text-decoration: line-through;
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+  section[id] {
+    scroll-margin-top: 80px;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Encabezado con buscador -->
 <div class="page-head p-4 p-md-5 mb-4">
-    <div class="row align-items-center g-3">
-        <div class="col-md-7">
-            <h1 class="fw-bold mb-1">Catálogo</h1>
-            <p class="text-white-50 mb-0">
-                {% if q %}Resultados para "<strong class="text-white">{{ q }}</strong>"{% else %}Todos los productos disponibles en TechGear{% endif %}
-            </p>
-        </div>
-        <div class="col-md-5">
-            <form method="get" action="{% url 'catalogo' %}" class="d-flex" role="search">
-                {% if categoria_sel %}<input type="hidden" name="categoria" value="{{ categoria_sel }}">{% endif %}
-                <input type="search" name="q" value="{{ q }}" class="form-control me-2" placeholder="Buscar por nombre o categoría...">
-                <button class="btn btn-brand" type="submit"><i class="bi bi-search"></i></button>
-            </form>
-        </div>
+  <div class="row align-items-center g-3">
+    <div class="col-md-7">
+      <h1 class="fw-bold mb-1">Catálogo</h1>
+      <p class="text-white-50 mb-0">
+        {% if q %}Resultados para "<strong class="text-white">{{ q }}</strong>"{% else %}Todos los productos disponibles en TechGear{% endif %}
+      </p>
     </div>
+    <div class="col-md-5">
+      <form
+        method="get"
+        action="{% url 'catalogo' %}"
+        class="d-flex"
+        role="search"
+      >
+        {% if categoria_sel %}
+        <input type="hidden" name="categoria" value="{{ categoria_sel }}" />
+        {% endif %}
+        <input
+          type="search"
+          name="q"
+          value="{{ q }}"
+          class="form-control me-2"
+          placeholder="Buscar por nombre o categoría..."
+        />
+        <button class="btn btn-brand" type="submit">
+          <i class="bi bi-search"></i>
+        </button>
+      </form>
+    </div>
+  </div>
 </div>
 
 {% if usuario.es_admin %}
-    <div class="mb-3">
-        <a href="{% url 'dashboard' %}" class="btn btn-dark btn-sm"><i class="bi bi-speedometer2"></i> Panel de administración</a>
-    </div>
+<div class="mb-3">
+  <a href="{% url 'dashboard' %}" class="btn btn-dark btn-sm"
+    ><i class="bi bi-speedometer2"></i> Panel de administración</a
+  >
+</div>
 {% endif %}
 
 <!-- Categorías -->
 <section id="categorias" class="mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold mb-0">Categorías</h2>
-        {% if categoria_sel %}
-            <a href="{% url 'catalogo' %}{% if q %}?q={{ q|urlencode }}{% endif %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-x-lg"></i> Quitar filtro</a>
-        {% endif %}
-    </div>
-    <div class="row g-3">
-        {% for c in categorias %}
-        <div class="col-6 col-md-3">
-            <a href="{% url 'catalogo' %}?categoria={{ c.nombre|urlencode }}{% if q %}&q={{ q|urlencode }}{% endif %}#productos" class="text-decoration-none text-dark">
-                <div class="card cat-card text-center p-4 {% if c.activa %}activa{% endif %}">
-                    <i class="bi {{ c.icono }}"></i>
-                    <div class="fw-semibold mt-2">{{ c.nombre }}</div>
-                    <small class="text-muted">{{ c.cantidad }} producto{{ c.cantidad|pluralize }}</small>
-                </div>
-            </a>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold mb-0">Categorías</h2>
+    {% if categoria_sel %}
+    <a href="{% url 'catalogo' %}" class="btn btn-outline-dark btn-sm"
+      ><i class="bi bi-x-lg"></i> Quitar filtro</a
+    >
+    {% endif %}
+  </div>
+  <div class="row g-3">
+    {% for c in categorias %}
+    <div class="col-6 col-md-3">
+      <a
+        href="{% url 'catalogo' %}?categoria={{ c.nombre|urlencode }}{% if q %}&q={{ q|urlencode }}{% endif %}#productos"
+        class="text-decoration-none text-dark"
+      >
+        <div
+          class="card cat-card text-center p-4 {% if c.activa %}activa{% endif %}"
+        >
+          <i class="bi {{ c.icono }}"></i>
+          <div class="fw-semibold mt-2">{{ c.nombre }}</div>
+          <small class="text-muted"
+            >{{ c.cantidad }} producto{{ c.cantidad|pluralize }}</small
+          >
         </div>
-        {% endfor %}
+      </a>
     </div>
+    {% endfor %}
+  </div>
 </section>
 
 <!-- Productos -->
 <section id="productos" class="mb-5 pb-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <h2 class="fw-bold mb-0">
-            {% if categoria_sel %}{{ categoria_sel }}{% else %}Productos destacados{% endif %}
-            <small class="text-muted fs-6 ms-2">{{ productos|length }} producto{{ productos|length|pluralize }}</small>
-        </h2>
-        {% if productos %}
-        <select id="orden" class="form-select w-auto">
-            <option value="">Ordenar por</option>
-            <option value="asc">Menor precio</option>
-            <option value="desc">Mayor precio</option>
-            <option value="nombre">Nombre (A-Z)</option>
-        </select>
-        {% endif %}
-    </div>
-
+  <div
+    class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"
+  >
+    <h2 class="fw-bold mb-0">
+      {% if categoria_sel %} {{ categoria_sel }} {% else %} Productos destacados
+      {% endif %}
+      <small class="text-muted fs-6 ms-2"
+        >{{ productos|length }} producto{{ productos|length|pluralize }}</small
+      >
+    </h2>
     {% if productos %}
-    <div class="row g-4" id="grid">
-        {% for p in productos %}
-        <div class="col-6 col-md-4 col-lg-3 item"
-             data-precio="{{ p.precio|default:0|unlocalize }}"
-             data-nombre="{{ p.nombre|lower }}">
-            <div class="card product-card h-100 shadow-sm">
-                <div class="product-img" {% if p.color %}style="background:{{ p.color }}"{% endif %}><i class="bi {{ p.icono }}"></i></div>
-                <div class="card-body d-flex flex-column">
-                    <span class="badge bg-dark align-self-start mb-2">{{ p.etiqueta|default:p.categoria|default:"Otros" }}</span>
-                    <h6 class="card-title mb-1">{{ p.nombre }}</h6>
-                    <small class="text-muted mb-2">{{ p.categoria|default:"Otros" }}</small>
-                    <div class="mt-auto">
-                        {% if p.precio_anterior %}<div class="old-price">${{ p.precio_anterior|floatformat:"0g" }}</div>{% endif %}
-                        <div class="fw-bold fs-5 mb-2">${{ p.precio|default:0|floatformat:"0g" }}</div>
-                        
-                        <!-- Stock visible siempre -->
-                        <div class="mb-2">
-                            <span class="badge bg-light text-dark border">
-                                <i class="bi bi-box-seam"></i> Stock disponible: <strong>{{ p.stock|default:0 }}</strong>
-                            </span>
-                        </div>
-
-                        <!-- Formulario dinámico para agregar al pedido -->
-                        <form method="post" action="{% url 'agregar_pedido' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="producto_id" value="{{ p.id }}">
-                            <input type="hidden" name="producto_nombre" value="{{ p.nombre }}">
-                            <input type="hidden" name="precio" value="{{ p.precio }}">
-
-                            <div class="input-group input-group-sm">
-                                <input type="number" name="cantidad" id="qty-{{ forloop.counter }}" class="form-control text-center" value="1" min="1" max="{{ p.stock|default:10 }}">
-                                <button class="btn btn-brand" type="submit">
-                                    <i class="bi bi-cart-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="text-center py-5">
-        <i class="bi bi-search fs-1 text-muted"></i>
-        <h4 class="mt-3">No encontramos productos</h4>
-        <p class="text-muted">
-            {% if q or categoria_sel %}No hay resultados con los filtros actuales.{% else %}Todavía no hay productos en el catálogo.{% endif %}
-        </p>
-        {% if q or categoria_sel %}<a href="{% url 'catalogo' %}" class="btn btn-brand">Ver todo el catálogo</a>{% endif %}
-    </div>
+    <select id="orden" class="form-select w-auto">
+      <option value="">Ordenar por</option>
+      <option value="asc">Menor precio</option>
+      <option value="desc">Mayor precio</option>
+      <option value="nombre">Nombre (A-Z)</option>
+    </select>
     {% endif %}
+  </div>
+
+  {% if productos %}
+  <div class="row g-4" id="grid">
+    {% for p in productos %}
+    <div
+      class="col-6 col-md-4 col-lg-3 item"
+      data-precio="{{ p.precio|default:0|unlocalize }}"
+      data-nombre="{{ p.nombre|lower }}"
+    >
+      <div class="card product-card h-100 shadow-sm">
+        <!-- Imagen PNG local transparente con mapeo inteligente -->
+        <div
+          class="p-3 text-center product-img"
+          style="height: 170px; background: #f8f9fa"
+        >
+          {% with cat=p.categoria|lower nombre=p.nombre|lower %}
+            {% if p.imagen %}
+              <img src="{{ p.imagen }}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'portatil' in cat or 'portátil' in cat or 'portatil' in nombre or 'laptop' in nombre %}
+              <img src="{% static 'img/portatil.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'celular' in cat or 'smartphone' in cat or 'telefono' in cat or 'celular' in nombre or 'smartphone' in nombre %}
+              <img src="{% static 'img/smartphone.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'audio' in cat or 'audifono' in cat or 'audífono' in cat or 'audio' in nombre %}
+              <img src="{% static 'img/audifonos.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'wearable' in cat or 'smartwatch' in cat or 'reloj' in cat or 'wearable' in nombre %}
+              <img src="{% static 'img/smartwatch.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'periferico' in cat or 'periférico' in cat or 'teclado' in cat or 'teclado' in nombre %}
+              <img src="{% static 'img/teclado.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'gaming' in cat or 'control' in cat or 'gamer' in cat or 'control' in nombre or 'gaming' in nombre %}
+              <img src="{% static 'img/control.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% elif 'camara' in cat or 'cámara' in cat or 'camara' in nombre %}
+              <img src="{% static 'img/camara.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% else %}
+              <img src="{% static 'img/router.png' %}" alt="{{ p.nombre }}" class="w-100 h-100 object-fit-contain" />
+            {% endif %}
+          {% endwith %}
+        </div>
+        <div class="card-body d-flex flex-column">
+          <span class="badge bg-dark align-self-start mb-2"
+            >{{ p.etiqueta|default:p.categoria|default:"Otros" }}</span
+          >
+          <h6 class="card-title mb-1">{{ p.nombre }}</h6>
+          <small class="text-muted mb-2"
+            >{{ p.categoria|default:"Otros" }}</small
+          >
+          <div class="mt-auto">
+            {% if p.precio_anterior %}
+            <div class="old-price">
+              ${{ p.precio_anterior|floatformat:"0g" }}
+            </div>
+            {% endif %}
+            <div class="fw-bold fs-5 mb-2">
+              ${{ p.precio|default:0|floatformat:"0g" }}
+            </div>
+
+            <!-- Stock visible siempre -->
+            <div class="mb-2">
+              <span class="badge bg-light text-dark border">
+                <i class="bi bi-box-seam"></i> Stock disponible:
+                <strong>{{ p.stock|default:0 }}</strong>
+              </span>
+            </div>
+
+            <!-- Formulario dinámico para agregar al pedido -->
+            <form method="post" action="{% url 'agregar_pedido' %}">
+              {% csrf_token %}
+              <input type="hidden" name="producto_id" value="{{ p.id }}" />
+              <input
+                type="hidden"
+                name="producto_nombre"
+                value="{{ p.nombre }}"
+              />
+              <input type="hidden" name="precio" value="{{ p.precio }}" />
+
+              <div class="input-group input-group-sm">
+                <input
+                  type="number"
+                  name="cantidad"
+                  id="qty-{{ forloop.counter }}"
+                  class="form-control text-center"
+                  value="1"
+                  min="1"
+                  max="{{ p.stock|default:10 }}"
+                />
+                <button class="btn btn-brand" type="submit">
+                  <i class="bi bi-cart-plus"></i> Agregar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-search fs-1 text-muted"></i>
+    <h4 class="mt-3">No encontramos productos</h4>
+    <p class="text-muted">
+      {% if q or categoria_sel %} No hay resultados con los filtros actuales. {%
+      else %} Todavía no hay productos en el catálogo. {% endif %}
+    </p>
+    {% if q or categoria_sel %}
+    <a href="{% url 'catalogo' %}" class="btn btn-brand"
+      >Ver todo el catálogo</a
+    >
+    {% endif %}
+  </div>
+  {% endif %}
 </section>
 {% endblock %}
 
 {% block extra_js %}
 {% verbatim %}
 <script>
-  const grid = document.getElementById('grid');
-  const orden = document.getElementById('orden');
+  const grid = document.getElementById("grid");
+  const orden = document.getElementById("orden");
   if (grid && orden) {
-    const items = Array.from(grid.querySelectorAll('.item'));
-    orden.addEventListener('change', e => {
+    const items = Array.from(grid.querySelectorAll(".item"));
+    orden.addEventListener("change", (e) => {
       const v = e.target.value;
       const arr = [...items];
-      if (v === 'asc')    arr.sort((a, b) => a.dataset.precio - b.dataset.precio);
-      if (v === 'desc')   arr.sort((a, b) => b.dataset.precio - a.dataset.precio);
-      if (v === 'nombre') arr.sort((a, b) => a.dataset.nombre.localeCompare(b.dataset.nombre));
-      arr.forEach(i => grid.appendChild(i));
+      if (v === "asc") arr.sort((a, b) => a.dataset.precio - b.dataset.precio);
+      if (v === "desc") arr.sort((a, b) => b.dataset.precio - a.dataset.precio);
+      if (v === "nombre")
+        arr.sort((a, b) => a.dataset.nombre.localeCompare(b.dataset.nombre));
+      arr.forEach((i) => grid.appendChild(i));
     });
   }
 </script>

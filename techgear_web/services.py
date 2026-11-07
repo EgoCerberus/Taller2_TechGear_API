@@ -3,15 +3,15 @@ import requests
 # URL base de tu FastAPI (o tu URL de Render)
 # API_URL = "http://127.0.0.1:8001" 
 # API_URL = "https://taller2-techgear-api.onrender.com"
-API_URL = "https://taller2-techgear-api.onrender.com"
+API_URL = "http://127.0.0.1:8000" 
 
 def api_listar_productos():
     try:
-        response = requests.get(f"{API_URL}/productos")
+        response = requests.get(f"{API_URL}/productos") 
         if response.status_code == 200:
             return response.json()
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Error de conexión: {e}")
     return []
 
 def api_login(email, password):
@@ -136,8 +136,9 @@ def api_eliminar_pedido(token, pedido_id):
     """
     headers = {"Authorization": f"Bearer {token}"}
     try:
-        response = requests.delete(f"{API_URL}/pedidos/{pedido_id}", headers=headers, timeout=5)
-        return response.status_code in [200, 204], response.json() if response.text.strip() else {}
+        response = requests.delete(f"{API_URL}/pedidos/{pedido_id}", headers=headers)
+        # Retorna True si se elimina con éxito (200 OK o 204 No Content)
+        return response.status_code in [200, 204], response.json() if response.content else {}
     except Exception as e:
         return False, {"detail": str(e)}
     
@@ -151,12 +152,11 @@ def api_eliminar_pedido(token, pedido_id):
     =================================================================
     """
     headers = {"Authorization": f"Bearer {token}"}
-    url = f"{API_URL}/pedidos/{pedido_id}"
-    
-    print(f"DEBUG: Intentando eliminar pedido en URL -> {url}")
-    
     try:
-        response = requests.delete(url, headers=headers, timeout=5)
+        response = requests.delete(f"{API_URL}/pedidos/{pedido_id}", headers=headers)
+        return response.status_code in [200, 204], response.json() if response.content else {}
+    except Exception as e:
+        return False, {"detail": str(e)}
         
         # Imprime en la consola de Django la respuesta exacta de FastAPI
         print(f"DEBUG DELETE RESPUESTA - Status: {response.status_code}")

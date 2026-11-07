@@ -1,29 +1,49 @@
 {% extends 'base.html' %}
+{% block title %}TechGear - Editar Producto{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow p-4">
-            <h3 class="text-center mb-3">Editar Producto</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" name="nombre" class="form-control" required>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-body p-4">
+                    <!-- Icono y título dentro del contenedor -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4 me-3 fs-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0">Editar Producto</h4>
+                            <p class="text-muted small mb-0">Actualiza los datos del inventario.</p>
+                        </div>
+                    </div>
+
+                    <!-- Formulario -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" placeholder="{{ producto.nombre }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Categoría</label>
+                            <input type="text" name="categoria" class="form-control" value="{{ producto.categoria }}" placeholder="{{ producto.categoria }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Precio</label>
+                            <input type="number" step="0.01" name="precio" class="form-control" value="{{ producto.precio }}" placeholder="{{ producto.precio }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Stock</label>
+                            <input type="number" name="stock" class="form-control" value="{{ producto.stock }}" placeholder="{{ producto.stock }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-brand w-100 text-white fw-bold mt-2">Guardar Cambios</button>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'dashboard' %}" class="text-decoration-none small text-muted">Cancelar</a>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Categoría</label>
-                    <input type="text" name="categoria" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Precio</label>
-                    <input type="number" step="0.01" name="precio" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Stock</label>
-                    <input type="number" name="stock" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-warning w-100 text-white">Guardar Cambios</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
