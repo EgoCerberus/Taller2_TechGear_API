@@ -10,15 +10,15 @@
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <div class="bg-primary-subtle text-primary p-2 rounded-3">
-                    <i class="bi bi-receipt fs-5"></i>
+                    <i class="bi bi-receipt fs-5" aria-hidden="true"></i>
                 </div>
-                <h2 class="fw-bold text-dark mb-0">Pedidos</h2>
+                <h1 class="h2 fw-bold text-dark mb-0">Pedidos</h1>
             </div>
             <p class="text-muted mb-0">Revisa los envíos y actualiza su estado.</p>
         </div>
         <div>
             <a href="{% url 'dashboard' %}" class="btn btn-outline-primary rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i> Volver al dashboard
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Volver al dashboard
             </a>
         </div>
     </div>
@@ -61,7 +61,7 @@
                         {{ pedido.usuario_nombre|slice:":1"|upper }}
                     </div>
                     <div>
-                        <h6 class="fw-bold text-dark mb-0">{{ pedido.usuario_nombre }}</h6>
+                        <h2 class="h6 fw-bold text-dark mb-0">{{ pedido.usuario_nombre }}</h2>
                         <small class="text-muted">Pedido #{{ pedido.codigo }} • {{ pedido.fecha }}</small>
                     </div>
                 </div>
@@ -69,11 +69,11 @@
                 <div>
                     {% if pedido.estado == 'Enviado' %}
                         <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fw-semibold">
-                            <i class="bi bi-truck me-1"></i> Enviado
+                            <i class="bi bi-truck me-1" aria-hidden="true"></i> Enviado
                         </span>
                     {% elif pedido.estado == 'Pendiente' %}
                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2 fw-semibold">
-                            <i class="bi bi-clock me-1"></i> Pendiente
+                            <i class="bi bi-clock me-1" aria-hidden="true"></i> Pendiente
                         </span>
                     {% else %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
@@ -87,7 +87,7 @@
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-2">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-box-seam text-primary"></i>
+                        <i class="bi bi-box-seam text-primary" aria-hidden="true"></i>
                         <span class="fw-semibold text-dark">{{ pedido.producto_nombre }} x {{ pedido.cantidad }}</span>
                     </div>
                     <span class="text-muted small">${{ pedido.precio_unitario }} c/u</span>
@@ -95,7 +95,7 @@
 
                 <!-- Dirección y Teléfono en caja sutil -->
                 <div class="border rounded-3 p-2 px-3 text-muted small d-flex align-items-center gap-2 bg-white">
-                    <i class="bi bi-geo-alt text-primary fs-5"></i>
+                    <i class="bi bi-geo-alt text-primary fs-5" aria-hidden="true"></i>
                     <span>{{ pedido.direccion }}, Tel. {{ pedido.telefono }}</span>
                 </div>
             </div>
@@ -114,14 +114,14 @@
                     <form method="POST" action="{% url 'actualizar_estado_pedido' pedido.id %}" class="d-flex align-items-center gap-2 m-0">
                         {% csrf_token %}
                         <!-- Selector con la misma altura de los botones (sin clases -sm) -->
-                        <select name="estado" class="form-select rounded-3 shadow-none" style="height: 38px; font-size: 0.9rem;">
+                        <select name="estado" class="form-select rounded-3 shadow-none" style="height: 38px; font-size: 0.9rem;" aria-label="Cambiar estado del pedido #{{ pedido.codigo }}">
                             <option value="Pendiente" {% if pedido.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
                             <option value="Enviado" {% if pedido.estado == 'Enviado' %}selected{% endif %}>Enviado</option>
                             <option value="Entregado" {% if pedido.estado == 'Entregado' %}selected{% endif %}>Entregado</option>
                             <option value="Cancelado" {% if pedido.estado == 'Cancelado' %}selected{% endif %}>Cancelado</option>
                         </select>
                         <button type="submit" class="btn btn-primary rounded-3 px-3 d-flex align-items-center justify-content-center text-nowrap" style="height: 38px;">
-                            <i class="bi bi-check-lg me-1"></i> Guardar
+                            <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Guardar
                         </button>
                     </form>
 
@@ -129,8 +129,8 @@
                     <form method="POST" action="{% url 'eliminar_pedido_admin' pedido.id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este pedido?');" class="m-0">
                         {% csrf_token %}
                         <!-- Botón de eliminar con la misma altura exacta (38px) y ancho uniforme -->
-                        <button type="submit" class="btn btn-outline-danger rounded-3 px-3 d-flex align-items-center justify-content-center" style="height: 38px;" title="Eliminar pedido">
-                            <i class="bi bi-trash"></i>
+                        <button type="submit" class="btn btn-outline-danger rounded-3 px-3 d-flex align-items-center justify-content-center" style="height: 38px;" title="Eliminar pedido" aria-label="Eliminar pedido #{{ pedido.codigo }}">
+                            <i class="bi bi-trash" aria-hidden="true"></i>
                         </button>
                     </form>
                 </div>
@@ -140,8 +140,8 @@
         {% empty %}
         <!-- Estado vacío si no hay pedidos -->
         <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-            <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-            <h5 class="text-muted fw-bold">No hay pedidos registrados</h5>
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-2" aria-hidden="true"></i>
+            <h2 class="h5 text-muted fw-bold">No hay pedidos registrados</h2>
             <p class="text-muted small">Los nuevos pedidos de los clientes aparecerán aquí.</p>
         </div>
         {% endfor %}

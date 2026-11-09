@@ -1,6 +1,7 @@
-# 🚀 TechGear - Plataforma E-Commerce Híbrida (Monorepo)
+# 🚀 TechGear 🛒 - Plataforma E-Commerce Híbrida (Monorepo)
 
-**TechGear** es una solución web de comercio electrónico moderna, rápida e integrada mediante una arquitectura desacoplada. Utiliza **FastAPI** como backend dinámico respaldado por **MongoDB Atlas**, y un frontend responsive en **Django** con integración fluida de Bootstrap y consumo de servicios RESTful.
+**TechGear** es una solución web de comercio electrónico moderna, rápida e integrada mediante una arquitectura híbrida de Django en el frontend/plantillas y conexión a base de datos y servicios backend.
+Utiliza **FastAPI** como backend dinámico respaldado por **MongoDB Atlas**, y un frontend responsive en **Django** con integración fluida de Bootstrap y consumo de servicios RESTful.
 
 ---
 
@@ -79,11 +80,6 @@ DEBUG=False
    pip install -r requirements.txt
    python manage.py runserver
    ```
-
-# 🛒 TechGear - E-commerce & Web Application
-
-Proyecto desarrollado para el programa **Análisis y Desarrollo de Software (ADSO)** del **SENA**. Consiste en una plataforma de comercio electrónico orientada a la venta de tecnología, con una arquitectura híbrida de Django en el frontend/plantillas y conexión a base de datos y servicios backend.
-
 ---
 
 ## 🌐 Enlaces de Despliegue
@@ -101,23 +97,61 @@ El proyecto cuenta con un diseño **100% responsivo** implementado con **Bootstr
 
 ```text
 Taller2_Python_TechGear/
+├── .gitignore
+├── db.sqlite3
+├── estructura.txt
+├── README.md
+├── structure.sh
 │
-└── techgear/
-    └── techgear_web/
-        ├── manage.py
-        ├── techgear/               # Configuración principal de Django (settings, urls, wsgi)
-        │   ├── __init__.py
-        │   ├── settings.py
-        │   ├── urls.py
-        │   └── wsgi.py
-        │
-        └── Store/                  # Aplicación principal de la tienda
-            ├── migrations/
-            ├── static/
-            │   └── img/            # Imágenes locales PNG transparentes (portatil, smartphone, etc.)
-            ├── templates/          # Plantillas HTML (base.html, catalog.html, etc.)
-            ├── admin.py
-            ├── apps.py
-            ├── models.py
-            ├── urls.py
-            └── views.py
+├── techgear_api/               # Backend en FastAPI con MongoDB
+│   ├── .env
+│   ├── .gitignore
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── seguridad.py
+│   ├── __init__.py
+│   ├── db/
+│   │   └── database.py
+│   └── models/
+│       ├── models.py
+│       ├── orders_model.py
+│       ├── product_model.py
+│       └── usuario_model.py
+│
+└── techgear_web/               # Frontend y vistas en Django
+    ├── .gitignore
+    ├── asgi.py
+    ├── db.sqlite3
+    ├── manage.py
+    ├── requirements.txt
+    ├── services.py
+    ├── settings.py
+    ├── urls.py
+    ├── vercel.json
+    ├── views.py
+    ├── wsgi.py
+    ├── __init__.py
+    └── Store/                  # Aplicación principal de la tienda
+        ├── migrations/
+        ├── static/
+        │   └── img/            # Imágenes PNG transparentes locales
+        │       ├── audifonos.png
+        │       ├── camara.png
+        │       ├── control.png
+        │       ├── portatil.png
+        │       ├── router.png
+        │       ├── smartphone.png
+        │       ├── smartwatch.png
+        │       └── teclado.png
+        └── templates/          # Plantillas HTML del sistema
+            ├── base.html
+            ├── catalog.html
+            ├── dashboard.html
+            ├── editar_producto.html
+            ├── index.html
+            ├── login.html
+            ├── mis_pedidos.html
+            ├── pedidos.html
+            ├── recuperar.html
+            ├── register.html
+            └── techstore.html

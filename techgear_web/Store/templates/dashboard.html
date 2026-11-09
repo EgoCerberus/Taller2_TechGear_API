@@ -6,19 +6,19 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center gap-3">
             <div class="bg-primary-subtle text-primary rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; min-width: 50px;">
-                <i class="bi bi-speedometer2 fs-4"></i>
+                <i class="bi bi-speedometer2 fs-4" aria-hidden="true"></i>
             </div>
             <div>
-                <h2 class="fw-bold text-dark mb-0">Panel de administración</h2>
+                <h1 class="h2 fw-bold text-dark mb-0">Panel de administración</h1>
                 <p class="text-muted mb-0">Gestiona el inventario y catálogo de TechGear.</p>
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{% url 'lista_pedidos' %}" class="btn btn-outline-primary rounded-pill px-3 py-2">
-                <i class="bi bi-receipt me-1"></i> Pedidos
+                <i class="bi bi-receipt me-1" aria-hidden="true"></i> Pedidos
             </a>
             <a href="{% url 'crear_producto' %}" class="btn btn-primary rounded-pill px-3 py-2">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo producto
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nuevo producto
             </a>
         </div>
     </div>
@@ -29,8 +29,8 @@
         <!-- Cabecera de la Tarjeta -->
         <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom mb-3">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-box-seam fs-5 text-muted"></i>
-                <h5 class="mb-0 fw-bold text-dark">Productos</h5>
+                <i class="bi bi-box-seam fs-5 text-muted" aria-hidden="true"></i>
+                <h2 class="h5 mb-0 fw-bold text-dark">Productos</h2>
             </div>
             <!-- Contador de productos -->
             <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold">
@@ -61,7 +61,7 @@
                                 {% else %}
                                     <!-- Imagen por defecto si el producto no tiene foto -->
                                     <div class="bg-light rounded-3 border d-flex align-items-center justify-content-center text-secondary" style="width: 45px; height: 45px; min-width: 45px;">
-                                        <i class="bi bi-image fs-6"></i>
+                                        <i class="bi bi-image fs-6" aria-hidden="true"></i>
                                     </div>
                                 {% endif %}
                                 <span class="fw-bold text-dark">{{ prod.nombre }}</span>
@@ -89,18 +89,18 @@
 
                         <!-- Columna Acciones (Botones de Editar y Eliminar) -->
                         <td class="text-end pe-3">
-                            <a href="{% url 'editar_producto' prod.id %}" class="btn btn-sm btn-outline-primary rounded-2 px-2 py-1 me-1" title="Editar">
-                                <i class="bi bi-pencil"></i>
+                            <a href="{% url 'editar_producto' prod.id %}" class="btn btn-sm btn-outline-primary rounded-2 px-2 py-1 me-1" title="Editar" aria-label="Editar {{ prod.nombre }}">
+                                <i class="bi bi-pencil" aria-hidden="true"></i>
                             </a>
-                            <a href="{% url 'eliminar_producto' prod.id %}" class="btn btn-sm btn-outline-danger rounded-2 px-2 py-1" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este producto?');">
-                                <i class="bi bi-trash"></i>
+                            <a href="{% url 'eliminar_producto' prod.id %}" class="btn btn-sm btn-outline-danger rounded-2 px-2 py-1" title="Eliminar" aria-label="Eliminar {{ prod.nombre }}" onclick="return confirm('¿Estás seguro de eliminar este producto?');">
+                                <i class="bi bi-trash" aria-hidden="true"></i>
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
                         <td colspan="5" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            <i class="bi bi-inbox fs-2 d-block mb-2" aria-hidden="true"></i>
                             No hay productos registrados en el sistema.
                         </td>
                     </tr>

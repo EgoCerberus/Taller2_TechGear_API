@@ -32,8 +32,8 @@
         <a href="#ofertas" class="btn btn-outline-light btn-lg">Ofertas</a>
       </div>
       <div class="col-lg-6 text-center d-none d-lg-block">
-        <i class="bi bi-laptop" style="font-size:9rem;color:#93c5fd"></i>
-        <i class="bi bi-phone" style="font-size:7rem;color:#c4b5fd"></i>
+        <i class="bi bi-laptop" style="font-size:9rem;color:#93c5fd" aria-hidden="true"></i>
+        <i class="bi bi-phone" style="font-size:7rem;color:#c4b5fd" aria-hidden="true"></i>
       </div>
     </div>
   </div>
@@ -43,10 +43,10 @@
 <section class="py-4 bg-white border-bottom">
   <div class="container">
     <div class="row text-center g-3">
-      <div class="col-6 col-md-3"><i class="bi bi-truck fs-3 text-primary"></i><div class="fw-semibold">Envío rápido</div></div>
-      <div class="col-6 col-md-3"><i class="bi bi-shield-check fs-3 text-primary"></i><div class="fw-semibold">Garantía oficial</div></div>
-      <div class="col-6 col-md-3"><i class="bi bi-credit-card fs-3 text-primary"></i><div class="fw-semibold">Pago seguro</div></div>
-      <div class="col-6 col-md-3"><i class="bi bi-headset fs-3 text-primary"></i><div class="fw-semibold">Soporte 24/7</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-truck fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Envío rápido</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-shield-check fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Garantía oficial</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-credit-card fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Pago seguro</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-headset fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Soporte 24/7</div></div>
     </div>
   </div>
 </section>
@@ -56,14 +56,14 @@
   <div class="container">
     <h2 class="fw-bold mb-4">Categorías</h2>
     <div class="row g-3">
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=port" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-laptop"></i><div class="fw-semibold mt-2">Portátiles</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=celular" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-phone"></i><div class="fw-semibold mt-2">Celulares</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=gaming" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-controller"></i><div class="fw-semibold mt-2">Gaming</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=audio" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-headphones"></i><div class="fw-semibold mt-2">Audio</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=wearable" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-smartwatch"></i><div class="fw-semibold mt-2">Wearables</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=perif" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-keyboard"></i><div class="fw-semibold mt-2">Periféricos</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=cámara" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-camera"></i><div class="fw-semibold mt-2">Cámaras</div></div></a></div>
-      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=red" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-hdd-network"></i><div class="fw-semibold mt-2">Redes</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=port" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-laptop" aria-hidden="true"></i><div class="fw-semibold mt-2">Portátiles</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=celular" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-phone" aria-hidden="true"></i><div class="fw-semibold mt-2">Celulares</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=gaming" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-controller" aria-hidden="true"></i><div class="fw-semibold mt-2">Gaming</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=audio" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-headphones" aria-hidden="true"></i><div class="fw-semibold mt-2">Audio</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=wearable" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-smartwatch" aria-hidden="true"></i><div class="fw-semibold mt-2">Wearables</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=perif" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-keyboard" aria-hidden="true"></i><div class="fw-semibold mt-2">Periféricos</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=cámara" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-camera" aria-hidden="true"></i><div class="fw-semibold mt-2">Cámaras</div></div></a></div>
+      <div class="col-6 col-md-3"><a href="{% url 'catalogo' %}?q=red" class="text-decoration-none text-dark"><div class="card cat-card text-center p-4"><i class="bi bi-hdd-network" aria-hidden="true"></i><div class="fw-semibold mt-2">Redes</div></div></a></div>
     </div>
   </div>
 </section>
@@ -86,8 +86,8 @@
       <h2 class="fw-bold">Hasta 30% de descuento en gaming</h2>
       <p class="mb-4">Solo esta semana. Suscríbete y recibe el cupón en tu correo.</p>
       <form class="row g-2 justify-content-center" onsubmit="event.preventDefault();alert('¡Gracias por suscribirte!')">
-        <div class="col-12 col-md-5"><input type="email" class="form-control form-control-lg" placeholder="tu@correo.com" required></div>
-        <div class="col-12 col-md-auto"><button class="btn btn-dark btn-lg">Suscribirme</button></div>
+        <div class="col-12 col-md-5"><input type="email" class="form-control form-control-lg" placeholder="tu@correo.com" aria-label="Correo electrónico para suscribirse" required></div>
+        <div class="col-12 col-md-auto"><button class="btn btn-dark btn-lg" type="submit">Suscribirme</button></div>
       </form>
     </div>
   </div>
@@ -100,16 +100,16 @@
       <div class="col-md-6">
         <h2 class="fw-bold">Contáctanos</h2>
         <p class="text-muted">¿Dudas sobre un producto o tu pedido? Escríbenos.</p>
-        <p><i class="bi bi-geo-alt text-primary"></i> Medellín, Colombia</p>
-        <p><i class="bi bi-envelope text-primary"></i> contacto@techgear.example</p>
-        <p><i class="bi bi-telephone text-primary"></i> +57 300 000 0000</p>
+        <p><i class="bi bi-geo-alt text-primary" aria-hidden="true"></i> Medellín, Colombia</p>
+        <p><i class="bi bi-envelope text-primary" aria-hidden="true"></i> contacto@techgear.example</p>
+        <p><i class="bi bi-telephone text-primary" aria-hidden="true"></i> +57 300 000 0000</p>
       </div>
       <div class="col-md-6">
         <form onsubmit="event.preventDefault();alert('Mensaje enviado (demo)')">
-          <div class="mb-3"><input class="form-control" placeholder="Nombre" required></div>
-          <div class="mb-3"><input type="email" class="form-control" placeholder="Correo" required></div>
-          <div class="mb-3"><textarea class="form-control" rows="4" placeholder="Mensaje" required></textarea></div>
-          <button class="btn btn-brand">Enviar</button>
+          <div class="mb-3"><input class="form-control" placeholder="Nombre" aria-label="Nombre completo" required></div>
+          <div class="mb-3"><input type="email" class="form-control" placeholder="Correo" aria-label="Correo electrónico" required></div>
+          <div class="mb-3"><textarea class="form-control" rows="4" placeholder="Mensaje" aria-label="Mensaje o consulta" required></textarea></div>
+          <button class="btn btn-brand" type="submit">Enviar</button>
         </form>
       </div>
     </div>
@@ -142,12 +142,12 @@
         </div>
         <div class="card-body d-flex flex-column">
           <span class="badge bg-dark align-self-start mb-2">${p.tag}</span>
-          <h6 class="card-title">${p.name}</h6>
+          <h3 class="h6 card-title fw-bold">${p.name}</h3>
           <div class="mt-auto">
             <div class="old-price">${fmt(p.old)}</div>
             <div class="fw-bold fs-5 mb-2">${fmt(p.price)}</div>
             <a href="/catalogo/?q=${encodeURIComponent(p.name)}" class="btn btn-brand w-100 text-decoration-none">
-              <i class="bi bi-cart-plus"></i> Agregar
+              <i class="bi bi-cart-plus" aria-hidden="true"></i> Agregar
             </a>
           </div>
         </div>

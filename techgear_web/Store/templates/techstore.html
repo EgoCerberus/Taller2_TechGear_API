@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TechNova | Tienda de tecnología</title>
+  <meta name="description" content="La mejor tecnología al mejor precio con garantía y envíos gratis en compras superiores a $200.000 COP.">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
@@ -27,6 +28,7 @@
     footer { background: var(--dark); color: #cbd5e1; }
     footer a { color: #cbd5e1; text-decoration: none; }
     footer a:hover { color: #fff; }
+    .text-muted { color: #475569 !important; }
   </style>
 </head>
 <body>
@@ -35,10 +37,10 @@
 <div class="bg-dark text-white-50 small py-1 text-center">Envíos gratis en compras superiores a $200.000 COP</div>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top" aria-label="Navegación principal">
   <div class="container">
-    <a class="navbar-brand brand" href="#"><i class="bi bi-cpu-fill text-primary"></i> Tech<span>Nova</span></a>
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu"><span class="navbar-toggler-icon"></span></button>
+    <a class="navbar-brand brand" href="#" aria-label="TechNova Inicio"><i class="bi bi-cpu-fill text-primary" aria-hidden="true"></i> Tech<span>Nova</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menú de navegación"><span class="navbar-toggler-icon"></span></button>
     <div class="collapse navbar-collapse" id="menu">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item"><a class="nav-link active" href="#inicio">Inicio</a></li>
@@ -48,11 +50,11 @@
         <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
       </ul>
       <form class="d-flex me-lg-3 my-2 my-lg-0" role="search">
-        <input class="form-control me-2" type="search" placeholder="Buscar productos...">
-        <button class="btn btn-outline-light" type="button"><i class="bi bi-search"></i></button>
+        <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar productos">
+        <button class="btn btn-outline-light" type="button" aria-label="Ejecutar búsqueda"><i class="bi bi-search" aria-hidden="true"></i></button>
       </form>
-      <button class="btn btn-brand position-relative" data-bs-toggle="offcanvas" data-bs-target="#carrito">
-        <i class="bi bi-cart3"></i> Carrito
+      <button class="btn btn-brand position-relative" data-bs-toggle="offcanvas" data-bs-target="#carrito" aria-label="Ver mi carrito de compras">
+        <i class="bi bi-cart3" aria-hidden="true"></i> Carrito
         <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
       </button>
     </div>
@@ -71,8 +73,8 @@
         <a href="#ofertas" class="btn btn-outline-light btn-lg">Ofertas</a>
       </div>
       <div class="col-lg-6 text-center d-none d-lg-block">
-        <i class="bi bi-laptop" style="font-size:9rem;color:#93c5fd"></i>
-        <i class="bi bi-phone" style="font-size:7rem;color:#c4b5fd"></i>
+        <i class="bi bi-laptop" style="font-size:9rem;color:#93c5fd" aria-hidden="true"></i>
+        <i class="bi bi-phone" style="font-size:7rem;color:#c4b5fd" aria-hidden="true"></i>
       </div>
     </div>
   </div>
@@ -82,10 +84,10 @@
 <section class="py-4 bg-white border-bottom">
   <div class="container">
     <div class="row text-center g-3">
-      <div class="col-6 col-md-3"><i class="bi bi-truck fs-3 text-primary"></i><div class="fw-semibold">Envío rápido</div></div>
-      <div class="col-6 col-md-3"><i class="bi bi-shield-check fs-3 text-primary"></i><div class="fw-semibold">Garantía oficial</div></div>
-      <div class="col-6 col-md-3"><i class="bi bi-credit-card fs-3 text-primary"></i><div class="fw-semibold">Pago seguro</div></div>
-      <div class="col-6 col-md-3"><i class="bi bi-headset fs-3 text-primary"></i><div class="fw-semibold">Soporte 24/7</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-truck fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Envío rápido</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-shield-check fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Garantía oficial</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-credit-card fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Pago seguro</div></div>
+      <div class="col-6 col-md-3"><i class="bi bi-headset fs-3 text-primary" aria-hidden="true"></i><div class="fw-semibold">Soporte 24/7</div></div>
     </div>
   </div>
 </section>
@@ -95,14 +97,14 @@
   <div class="container">
     <h2 class="fw-bold mb-4">Categorías</h2>
     <div class="row g-3">
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-laptop"></i><div class="fw-semibold mt-2">Portátiles</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-phone"></i><div class="fw-semibold mt-2">Celulares</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-controller"></i><div class="fw-semibold mt-2">Gaming</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-headphones"></i><div class="fw-semibold mt-2">Audio</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-smartwatch"></i><div class="fw-semibold mt-2">Wearables</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-keyboard"></i><div class="fw-semibold mt-2">Periféricos</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-camera"></i><div class="fw-semibold mt-2">Cámaras</div></div></div>
-      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-hdd-network"></i><div class="fw-semibold mt-2">Redes</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-laptop" aria-hidden="true"></i><div class="fw-semibold mt-2">Portátiles</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-phone" aria-hidden="true"></i><div class="fw-semibold mt-2">Celulares</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-controller" aria-hidden="true"></i><div class="fw-semibold mt-2">Gaming</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-headphones" aria-hidden="true"></i><div class="fw-semibold mt-2">Audio</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-smartwatch" aria-hidden="true"></i><div class="fw-semibold mt-2">Wearables</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-keyboard" aria-hidden="true"></i><div class="fw-semibold mt-2">Periféricos</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-camera" aria-hidden="true"></i><div class="fw-semibold mt-2">Cámaras</div></div></div>
+      <div class="col-6 col-md-3"><div class="card cat-card text-center p-4"><i class="bi bi-hdd-network" aria-hidden="true"></i><div class="fw-semibold mt-2">Redes</div></div></div>
     </div>
   </div>
 </section>
@@ -112,7 +114,7 @@
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="fw-bold mb-0">Productos destacados</h2>
-      <select class="form-select w-auto">
+      <select class="form-select w-auto" aria-label="Ordenar productos por">
         <option>Ordenar por</option><option>Menor precio</option><option>Mayor precio</option><option>Más vendidos</option>
       </select>
     </div>
@@ -127,8 +129,8 @@
       <h2 class="fw-bold">Hasta 30% de descuento en gaming</h2>
       <p class="mb-4">Solo esta semana. Suscríbete y recibe el cupón en tu correo.</p>
       <form class="row g-2 justify-content-center" onsubmit="event.preventDefault();alert('¡Gracias por suscribirte!')">
-        <div class="col-12 col-md-5"><input type="email" class="form-control form-control-lg" placeholder="tu@correo.com" required></div>
-        <div class="col-12 col-md-auto"><button class="btn btn-dark btn-lg">Suscribirme</button></div>
+        <div class="col-12 col-md-5"><input type="email" class="form-control form-control-lg" placeholder="tu@correo.com" aria-label="Correo para recibir cupones" required></div>
+        <div class="col-12 col-md-auto"><button class="btn btn-dark btn-lg" type="submit">Suscribirme</button></div>
       </form>
     </div>
   </div>
@@ -141,16 +143,16 @@
       <div class="col-md-6">
         <h2 class="fw-bold">Contáctanos</h2>
         <p class="text-muted">¿Dudas sobre un producto o tu pedido? Escríbenos.</p>
-        <p><i class="bi bi-geo-alt text-primary"></i> Medellín, Colombia</p>
-        <p><i class="bi bi-envelope text-primary"></i> contacto@technova.example</p>
-        <p><i class="bi bi-telephone text-primary"></i> +57 300 000 0000</p>
+        <p><i class="bi bi-geo-alt text-primary" aria-hidden="true"></i> Medellín, Colombia</p>
+        <p><i class="bi bi-envelope text-primary" aria-hidden="true"></i> contacto@technova.example</p>
+        <p><i class="bi bi-telephone text-primary" aria-hidden="true"></i> +57 300 000 0000</p>
       </div>
       <div class="col-md-6">
         <form onsubmit="event.preventDefault();alert('Mensaje enviado (demo)')">
-          <div class="mb-3"><input class="form-control" placeholder="Nombre" required></div>
-          <div class="mb-3"><input type="email" class="form-control" placeholder="Correo" required></div>
-          <div class="mb-3"><textarea class="form-control" rows="4" placeholder="Mensaje" required></textarea></div>
-          <button class="btn btn-brand">Enviar</button>
+          <div class="mb-3"><input class="form-control" placeholder="Nombre" aria-label="Nombre completo" required></div>
+          <div class="mb-3"><input type="email" class="form-control" placeholder="Correo" aria-label="Correo electrónico" required></div>
+          <div class="mb-3"><textarea class="form-control" rows="4" placeholder="Mensaje" aria-label="Mensaje o consulta" required></textarea></div>
+          <button class="btn btn-brand" type="submit">Enviar</button>
         </form>
       </div>
     </div>
@@ -162,12 +164,12 @@
   <div class="container">
     <div class="row g-4">
       <div class="col-md-4">
-        <div class="brand fs-4 text-white"><i class="bi bi-cpu-fill text-primary"></i> Tech<span>Nova</span></div>
+        <div class="brand fs-4 text-white"><i class="bi bi-cpu-fill text-primary" aria-hidden="true"></i> Tech<span>Nova</span></div>
         <p class="mt-2 small">Tu tienda de tecnología de confianza.</p>
       </div>
-      <div class="col-6 col-md-2"><h6 class="text-white">Tienda</h6><ul class="list-unstyled small"><li><a href="#categorias">Categorías</a></li><li><a href="#productos">Productos</a></li><li><a href="#ofertas">Ofertas</a></li></ul></div>
-      <div class="col-6 col-md-2"><h6 class="text-white">Ayuda</h6><ul class="list-unstyled small"><li><a href="#">Envíos</a></li><li><a href="#">Garantías</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
-      <div class="col-md-4"><h6 class="text-white">Síguenos</h6><a class="fs-4 me-3" href="#"><i class="bi bi-instagram"></i></a><a class="fs-4 me-3" href="#"><i class="bi bi-facebook"></i></a><a class="fs-4 me-3" href="#"><i class="bi bi-youtube"></i></a></div>
+      <div class="col-6 col-md-2"><h2 class="h6 text-white fw-bold">Tienda</h2><ul class="list-unstyled small"><li><a href="#categorias">Categorías</a></li><li><a href="#productos">Productos</a></li><li><a href="#ofertas">Ofertas</a></li></ul></div>
+      <div class="col-6 col-md-2"><h2 class="h6 text-white fw-bold">Ayuda</h2><ul class="list-unstyled small"><li><a href="#">Envíos</a></li><li><a href="#">Garantías</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
+      <div class="col-md-4"><h2 class="h6 text-white fw-bold">Síguenos</h2><a class="fs-4 me-3 d-inline-block p-1" href="#" aria-label="Instagram de TechNova"><i class="bi bi-instagram" aria-hidden="true"></i></a><a class="fs-4 me-3 d-inline-block p-1" href="#" aria-label="Facebook de TechNova"><i class="bi bi-facebook" aria-hidden="true"></i></a><a class="fs-4 me-3 d-inline-block p-1" href="#" aria-label="YouTube de TechNova"><i class="bi bi-youtube" aria-hidden="true"></i></a></div>
     </div>
     <hr class="border-secondary">
     <div class="text-center small">© 2026 TechNova. Todos los derechos reservados.</div>
@@ -175,8 +177,8 @@
 </footer>
 
 <!-- Carrito -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="carrito">
-  <div class="offcanvas-header"><h5 class="offcanvas-title">Tu carrito</h5><button class="btn-close" data-bs-dismiss="offcanvas"></button></div>
+<div class="offcanvas offcanvas-end" tabindex="-1" id="carrito" aria-label="Panel del carrito de compras">
+  <div class="offcanvas-header"><h2 class="h5 offcanvas-title">Tu carrito</h2><button class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar carrito"></button></div>
   <div class="offcanvas-body">
     <ul class="list-group mb-3" id="cartItems"></ul>
     <div class="d-flex justify-content-between fw-bold fs-5"><span>Total</span><span id="cartTotal">$0</span></div>
@@ -204,14 +206,14 @@
   document.getElementById('productGrid').innerHTML = products.map(p => `
     <div class="col-6 col-md-4 col-lg-3">
       <div class="card product-card h-100 shadow-sm">
-        <div class="product-img" style="background:${p.color}"><i class="bi ${p.icon}"></i></div>
+        <div class="product-img" style="background:${p.color}"><i class="bi ${p.icon}" aria-hidden="true"></i></div>
         <div class="card-body d-flex flex-column">
           <span class="badge bg-dark align-self-start mb-2">${p.tag}</span>
-          <h6 class="card-title">${p.name}</h6>
+          <h3 class="h6 card-title fw-bold">${p.name}</h3>
           <div class="mt-auto">
             <div class="old-price">${fmt(p.old)}</div>
             <div class="fw-bold fs-5 mb-2">${fmt(p.price)}</div>
-            <button class="btn btn-brand w-100" onclick="addToCart(${p.id})"><i class="bi bi-cart-plus"></i> Agregar</button>
+            <button class="btn btn-brand w-100" onclick="addToCart(${p.id})"><i class="bi bi-cart-plus" aria-hidden="true"></i> Agregar</button>
           </div>
         </div>
       </div>
@@ -230,7 +232,7 @@
     document.getElementById('cartItems').innerHTML = cart.length
       ? cart.map(x => `<li class="list-group-item d-flex justify-content-between align-items-center">
           <div><div class="fw-semibold">${x.name}</div><small class="text-muted">${x.qty} × ${fmt(x.price)}</small></div>
-          <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${x.id})"><i class="bi bi-trash"></i></button></li>`).join('')
+          <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${x.id})" aria-label="Eliminar ${x.name} del carrito"><i class="bi bi-trash" aria-hidden="true"></i></button></li>`).join('')
       : '<li class="list-group-item text-muted">Tu carrito está vacío</li>';
     document.getElementById('cartTotal').textContent = fmt(cart.reduce((s, x) => s + x.price * x.qty, 0));
   }
