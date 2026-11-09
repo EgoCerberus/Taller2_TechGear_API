@@ -2,8 +2,8 @@ import requests
 
 # URL base de tu FastAPI (o tu URL de Render)
 # API_URL = "http://127.0.0.1:8001" 
-# API_URL = "https://taller2-techgear-api.onrender.com"
-API_URL = "http://127.0.0.1:8000" 
+API_URL = "https://taller2-techgear-api.onrender.com"
+# API_URL = "http://127.0.0.1:8000" 
 
 def api_listar_productos():
     try:

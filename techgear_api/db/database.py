@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 
 # Carga el .env independientemente de dónde se ejecute uvicorn
 env_path = Path(__file__).resolve().parent.parent / '.env'

@@ -79,3 +79,45 @@ DEBUG=False
    pip install -r requirements.txt
    python manage.py runserver
    ```
+
+# 🛒 TechGear - E-commerce & Web Application
+
+Proyecto desarrollado para el programa **Análisis y Desarrollo de Software (ADSO)** del **SENA**. Consiste en una plataforma de comercio electrónico orientada a la venta de tecnología, con una arquitectura híbrida de Django en el frontend/plantillas y conexión a base de datos y servicios backend.
+
+---
+
+## 🌐 Enlaces de Despliegue
+* **Frontend (Vercel):** [https://taller2-tech-gear-api.vercel.app/](https://taller2-tech-gear-api.vercel.app/)
+* **Backend / API (Render):** [https://taller2-tech-gear-api.onrender.com](https://taller2-tech-gear-api.onrender.com)
+
+---
+
+## 📱 Diseño Responsivo
+El proyecto cuenta con un diseño **100% responsivo** implementado con **Bootstrap 5.3**, asegurando una experiencia de usuario fluida, adaptada y optimizada para dispositivos móviles, tablets y equipos de escritorio.
+
+---
+
+## 🗂️ Estructura del Proyecto (Encarpetado)
+
+```text
+Taller2_Python_TechGear/
+│
+└── techgear/
+    └── techgear_web/
+        ├── manage.py
+        ├── techgear/               # Configuración principal de Django (settings, urls, wsgi)
+        │   ├── __init__.py
+        │   ├── settings.py
+        │   ├── urls.py
+        │   └── wsgi.py
+        │
+        └── Store/                  # Aplicación principal de la tienda
+            ├── migrations/
+            ├── static/
+            │   └── img/            # Imágenes locales PNG transparentes (portatil, smartphone, etc.)
+            ├── templates/          # Plantillas HTML (base.html, catalog.html, etc.)
+            ├── admin.py
+            ├── apps.py
+            ├── models.py
+            ├── urls.py
+            └── views.py

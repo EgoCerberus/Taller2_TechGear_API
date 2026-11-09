@@ -247,18 +247,33 @@ def actualizar_estado_pedido(
     return {"mensaje": f"Estado del pedido actualizado a '{datos.estado}' exitosamente"}
 
 # =========================================================================
-# ENDPOINT: ELIMINAR PEDIDO (ADMIN) + REINTEGRO DE STOCK
-# Elimina un pedido y devuelve automáticamente las cantidades al stock 
-# de los productos correspondientes. Exige rol de administrador.
+# ENDPOINT: ELIMINAR / CANCELAR PEDIDO (ADMIN O CLIENTE DUEÑO) + STOCK
 # =========================================================================
 @app.delete("/pedidos/{pedido_id}", tags=["Pedidos"])
-def eliminar_pedido(pedido_id: str, _: dict = Depends(solo_admin)):
+def eliminar_pedido(pedido_id: str, usuario: dict = Depends(usuario_actual)):
     oid = to_oid(pedido_id)
     pedido = pedidos_collection.find_one({"_id": oid})
     
     if not pedido:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
     
+    # Validar permisos: es admin O es el dueño del pedido
+    rol = usuario.get("rol", "")
+    es_admin = rol in ["admin", "administrador"] or usuario.get("es_admin", False)
+    
+    email_usuario = usuario.get("email", "").lower()
+    email_pedido = (pedido.get("cliente_email") or pedido.get("usuario_email") or "").lower()
+    
+    es_dueno = email_usuario == email_pedido
+    estado_pedido = str(pedido.get("estado", "")).lower()
+
+    # Si no es admin, exigimos que sea el dueño Y que el pedido esté pendiente
+    if not es_admin:
+        if not es_dueno:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes permisos para cancelar este pedido")
+        if estado_pedido != "pendiente":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Solo se pueden cancelar pedidos en estado pendiente")
+
     # REINTEGRO DE STOCK: Devuelve la cantidad comprada al inventario del producto
     for item in pedido.get("items", []):
         prod_id = item.get("producto_id")
