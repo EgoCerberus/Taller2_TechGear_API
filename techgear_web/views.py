@@ -2,6 +2,7 @@ import unicodedata
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.core.cache import cache
 from services import (
     api_listar_productos,
     api_login,
@@ -9,7 +10,7 @@ from services import (
     api_crear_producto,
     api_eliminar_producto,
     api_actualizar_producto,
-    api_listar_pedidos,           
+    api_listar_pedidos,         
     api_actualizar_estado_pedido,
     api_crear_pedido,
     api_actualizar_pedido_cliente,
@@ -45,14 +46,14 @@ CATEGORIAS = [
 
 # Productos destacados de techstore.html (precio_anterior = precio sin descuento)
 PRODUCTOS_DESTACADOS = [
-    {'nombre': 'Portátil Pro 15"',       'categoria': 'Portátiles',  'precio': 3200000, 'precio_anterior': 3800000, 'etiqueta': 'Nuevo',  'color': '#3b82f6'},
-    {'nombre': 'Smartphone X Ultra',     'categoria': 'Celulares',   'precio': 2400000, 'precio_anterior': 2700000, 'etiqueta': '-11%',   'color': '#8b5cf6'},
-    {'nombre': 'Audífonos Wireless ANC', 'categoria': 'Audio',       'precio': 450000,  'precio_anterior': 600000,  'etiqueta': '-25%',   'color': '#0ea5e9'},
-    {'nombre': 'Smartwatch Fit 5',       'categoria': 'Wearables',   'precio': 380000,  'precio_anterior': 450000,  'etiqueta': 'Top',    'color': '#10b981'},
+    {'nombre': 'Portátil Pro 15"',        'categoria': 'Portátiles',  'precio': 3200000, 'precio_anterior': 3800000, 'etiqueta': 'Nuevo',  'color': '#3b82f6'},
+    {'nombre': 'Smartphone X Ultra',      'categoria': 'Celulares',   'precio': 2400000, 'precio_anterior': 2700000, 'etiqueta': '-11%',   'color': '#8b5cf6'},
+    {'nombre': 'Audífonos Wireless ANC', 'categoria': 'Audio',        'precio': 450000,  'precio_anterior': 600000,  'etiqueta': '-25%',   'color': '#0ea5e9'},
+    {'nombre': 'Smartwatch Fit 5',        'categoria': 'Wearables',   'precio': 380000,  'precio_anterior': 450000,  'etiqueta': 'Top',    'color': '#10b981'},
     {'nombre': 'Teclado Mecánico RGB',   'categoria': 'Periféricos', 'precio': 260000,  'precio_anterior': 320000,  'etiqueta': '-19%',   'color': '#f59e0b'},
-    {'nombre': 'Control Gamer Pro',      'categoria': 'Gaming',      'precio': 210000,  'precio_anterior': 260000,  'etiqueta': 'Gaming', 'color': '#ef4444'},
-    {'nombre': 'Cámara 4K Action',       'categoria': 'Cámaras',     'precio': 520000,  'precio_anterior': 650000,  'etiqueta': '-20%',   'color': '#6366f1'},
-    {'nombre': 'Router WiFi 6',          'categoria': 'Redes',       'precio': 290000,  'precio_anterior': 340000,  'etiqueta': 'Oferta', 'color': '#14b8a6'},
+    {'nombre': 'Control Gamer Pro',       'categoria': 'Gaming',      'precio': 210000,  'precio_anterior': 260000,  'etiqueta': 'Gaming', 'color': '#ef4444'},
+    {'nombre': 'Cámara 4K Action',        'categoria': 'Cámaras',     'precio': 520000,  'precio_anterior': 650000,  'etiqueta': '-20%',   'color': '#6366f1'},
+    {'nombre': 'Router WiFi 6',           'categoria': 'Redes',       'precio': 290000,  'precio_anterior': 340000,  'etiqueta': 'Oferta', 'color': '#14b8a6'},
 ]
 
 
@@ -70,8 +71,12 @@ def _grupo_de(categoria):
 def catalogo_view(request):
     usuario = request.session.get('usuario')
 
-    # 1) Obtener productos de la API
-    productos_api = api_listar_productos() or []
+    # 1) Obtener productos de la API usando caché temporal (evita latencia excesiva y cold starts repetidos)
+    productos_api = cache.get('productos_catalogo_cache')
+    if not productos_api:
+        productos_api = api_listar_productos() or []
+        cache.set('productos_catalogo_cache', productos_api, 300) # Expira en 5 minutos
+
     productos = []
     for p in productos_api:
         if isinstance(p, dict):
@@ -197,6 +202,7 @@ def crear_producto_view(request):
         }
         exito, _ = api_crear_producto(token, datos)
         if exito:
+            cache.delete('productos_catalogo_cache')  # Limpiar caché al crear
             messages.success(request, "Producto creado exitosamente.")
         else:
             messages.error(request, "Error al crear el producto.")
@@ -207,6 +213,7 @@ def eliminar_producto_view(request, producto_id):
     token = request.session.get('access_token')
     exito, _ = api_eliminar_producto(token, producto_id)
     if exito:
+        cache.delete('productos_catalogo_cache')  # Limpiar caché al eliminar
         messages.success(request, "Producto eliminado correctamente.")
     else:
         messages.error(request, "No se pudo eliminar el producto.")
@@ -232,6 +239,7 @@ def editar_producto_view(request, producto_id):
         }
         exito, _ = api_actualizar_producto(token, producto_id, datos)
         if exito:
+            cache.delete('productos_catalogo_cache')  # Limpiar caché al actualizar
             messages.success(request, "Producto actualizado correctamente.")
         else:
             messages.error(request, "Error al actualizar el producto.")
@@ -303,7 +311,7 @@ def actualizar_estado_pedido_view(request, pedido_id):
 def mis_pedidos_view(request):
     """
     Vista encargada de listar los pedidos del usuario actual.
-    Limpia, normaliza y formatea todos los datos para evitar errores en la plantilla.
+    L limpia, normaliza y formatea todos los datos para evitar errores en la plantilla.
     """
     token = request.session.get('access_token')
     usuario = request.session.get('usuario')
